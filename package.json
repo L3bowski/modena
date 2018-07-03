@@ -4,7 +4,7 @@
   "description": "Express based web server with support for multiple isolated apps",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/url-namespacing-should.js"
   },
   "dependencies": {
     "body-parser": "^1.17.1",
