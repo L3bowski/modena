@@ -1,6 +1,6 @@
 {
   "name": "modena",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "description": "Express based web server with support for multiple isolated apps",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,7 @@
     "url": "git+https://github.com/L3bowski/modena.git"
   },
   "keywords": [
+  	"modena",
     "multitenancy",
     "express",
     "multiple",
