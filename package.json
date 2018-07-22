@@ -22,7 +22,7 @@
     "url": "git+https://github.com/L3bowski/modena.git"
   },
   "keywords": [
-  	"modena",
+    "modena",
     "multitenancy",
     "express",
     "multiple",
