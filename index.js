@@ -34,12 +34,16 @@ const runServer = modenaConfig => {
 	const tracedAppResolverMiddleware = tracer.trace(getAppResolverMiddleware(modenaConfig, appsConfig));
 	server.use(tracedAppResolverMiddleware);
 
-	if (typeof modenaConfig.beforeRegisterApps == 'function') {
-		modenaConfig.beforeRegisterApps(server, modenaConfig, appsConfig, express);
+	if (typeof modenaConfig.beforeRegisteringApps == 'function') {
+		modenaConfig.beforeRegisteringApps(server, modenaConfig, appsConfig);
 	}
 
 	const tracedRegisterApps = tracer.trace(registerApps);
 	tracedRegisterApps(server, modenaConfig, appsConfig);
+
+	if (typeof modenaConfig.afterRegisteringApps == 'function') {
+		modenaConfig.afterRegisteringApps(server, modenaConfig, appsConfig);
+	}
 
 	const tracedServerListen = tracer.trace('listen', server);
 	tracedServerListen(modenaConfig.PORT, function (error) {
