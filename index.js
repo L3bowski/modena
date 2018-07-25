@@ -39,20 +39,21 @@ const runServer = modenaConfig => {
 	server.use(tracedAppResolverMiddleware);
 
 	const tracedRegisterApps = tracer.trace(registerApps);
-	tracedRegisterApps(server, modenaConfig, appsConfig);
-
-	if (typeof modenaConfig.afterRegisteringApps == 'function') {
-		modenaConfig.afterRegisteringApps(server, tracer, modenaConfig, appsConfig);
-	}
-
-	const tracedServerListen = tracer.trace('listen', server);
-	tracedServerListen(modenaConfig.PORT, function (error) {
-		if (error) {
-			tracer.error(error);
+	tracedRegisterApps(server, modenaConfig, appsConfig)
+	.then(() => {
+		if (typeof modenaConfig.afterRegisteringApps == 'function') {
+			modenaConfig.afterRegisteringApps(server, tracer, modenaConfig, appsConfig);
 		}
-		else {
-			tracer.info('Express server listening on port ' + modenaConfig.PORT);
-		}
+	
+		const tracedServerListen = tracer.trace('listen', server);
+		tracedServerListen(modenaConfig.PORT, function (error) {
+			if (error) {
+				tracer.error(error);
+			}
+			else {
+				tracer.info('Express server listening on port ' + modenaConfig.PORT);
+			}
+		});
 	});
 };
 
