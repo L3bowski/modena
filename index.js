@@ -22,6 +22,23 @@ const overrideEnvironmentParameters = modenaConfig => {
 	overridenPropeties.forEach(p => modenaConfig[p] = process.env[p]);
 };
 
+const extractAppsConfiguration = (modenaConfig, appsConfig) => {
+	appsConfig.forEach(appConfig => {
+		const appPropertiesKey = [];
+		for (key in modenaConfig) {
+			console.log(key)
+			if (key.startsWith(appConfig.name)) {
+				appPropertiesKey.push(key);
+			}
+		}
+		appPropertiesKey.forEach(key => {
+			const appKey = key.replace(appConfig.name + '_', '');
+			appConfig[appKey] = modenaConfig[key];
+			delete modenaConfig[key];
+		});
+	});
+};
+
 const runServer = modenaConfig => {
 	defaultConfig(modenaConfig);
 	overrideEnvironmentParameters(modenaConfig);
@@ -39,6 +56,7 @@ const runServer = modenaConfig => {
 
 	const tracedDiscoverApps = tracer.trace(discoverApps);
 	const appsConfig = tracedDiscoverApps(modenaConfig);
+	extractAppsConfiguration(modenaConfig, appsConfig);
 
 	if (typeof modenaConfig.beforeRegisteringApps == 'function') {
 		modenaConfig.beforeRegisteringApps(server, tracer, modenaConfig, appsConfig);

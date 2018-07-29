@@ -1,6 +1,6 @@
 {
   "name": "modena",
-  "version": "1.0.0-rc11",
+  "version": "1.0.0-rc12",
   "description": "Express based web server with support for multiple isolated apps",
   "main": "index.js",
   "scripts": {
