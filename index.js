@@ -10,12 +10,21 @@ const { registerApps } = require('./lib/app-register');
 
 const defaultConfig = modenaConfig => {
 	modenaConfig.appsFolder = modenaConfig.appsFolder || join(__dirname, '..', '..', 'apps');
+	modenaConfig.enableConsoleLogs = modenaConfig.enableConsoleLogs || 'false';
+	modenaConfig.logFilename = modenaConfig.logFilename || 'logs.txt';
 	modenaConfig.tracerLevel = modenaConfig.tracerLevel || 'error';
 	modenaConfig.PORT = modenaConfig.PORT || 80;
-}
+};
+
+const overrideEnvironmentParameters = modenaConfig => {
+	const configProperties = Object.keys(modenaConfig);
+	const overridenPropeties = Object.keys(process.env).filter(p => configProperties.includes(p));
+	overridenPropeties.forEach(p => modenaConfig[p] = process.env[p]);
+};
 
 const runServer = modenaConfig => {
 	defaultConfig(modenaConfig);
+	overrideEnvironmentParameters(modenaConfig);
 
 	configureWinston(modenaConfig);
 
