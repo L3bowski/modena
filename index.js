@@ -26,7 +26,6 @@ const extractAppsConfiguration = (modenaConfig, appsConfig) => {
 	appsConfig.forEach(appConfig => {
 		const appPropertiesKey = [];
 		for (key in modenaConfig) {
-			console.log(key)
 			if (key.startsWith(appConfig.name)) {
 				appPropertiesKey.push(key);
 			}
