@@ -35,7 +35,7 @@ const config = { ... };
 runServer(config);
 ```
 
-and we can get it up and running in the usual way
+and it gets up and running in the usual way
 
 ```bash
 npm install
