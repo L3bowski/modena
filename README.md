@@ -10,8 +10,8 @@ Each guest-app will be exposed in the url of the host-app plus the name of the f
 
 ```bash
 .  
-├── apps  
-│   └── kinder  
+├── _apps  
+│   └── _kinder  
 |       ├── public  
 |       ├── views  
 |       ├── index.js  
