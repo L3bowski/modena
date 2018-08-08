@@ -2,5 +2,6 @@ lib/
 node_modules/
 tests/
 .gitignore
+external-modules.d.ts
 tsconfig.json
 *.log

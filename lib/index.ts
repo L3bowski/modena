@@ -39,7 +39,7 @@ const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppCon
 	});
 };
 
-const runServer = (modenaConfig: ModenaConfig) => {
+export const runServer = (modenaConfig: ModenaConfig) => {
 	defaultConfig(modenaConfig);
 	overrideEnvironmentParameters(modenaConfig);
 
@@ -84,7 +84,7 @@ const runServer = (modenaConfig: ModenaConfig) => {
 	});
 };
 
-module.exports = {
+export default {
 	express,
 	runServer,
 	tracer
