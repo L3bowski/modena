@@ -1,14 +1,15 @@
-const { join } = require('path');
-const express = require('express');
-const assets = require('express-asset-versions');
-const { compileAppSass } = require('./sass-compiler');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const passport = require('passport');
-const tracer = require('./tracer');
-const { getUserManagementUtils } = require('./passport');
+import { join } from 'path';
+import express from 'express';
+import assets from 'express-asset-versions';
+import { compileAppSass } from './sass-compiler';
+import session from 'express-session';
+import bodyParser from 'body-parser';
+import passport from 'passport';
+import tracer from './tracer';
+import { getUserManagementUtils } from './passport';
+import { ModenaConfig, AppConfig, AppMiddleware, AppUtils } from './types';
 
-const registerApp = (server, modenaConfig, appConfig) => {
+const registerApp = (server: express.Application, modenaConfig: ModenaConfig, appConfig: AppConfig) => {
 	tracer.info('App name: ' + appConfig.name);
 
 	const jsonMiddleware = bodyParser.json();
@@ -19,11 +20,11 @@ const registerApp = (server, modenaConfig, appConfig) => {
 		name: appConfig.name
 	});
 
-	let appMiddleware = {
+	let appMiddleware: AppMiddleware = {
 		bodyParser: jsonMiddleware,
 		session: sessionMiddleware,
 	};
-	let appUtils = {};
+	let appUtils: AppUtils = {};
 
 	if (appConfig.enableAuthentication) {
 		const passportInitialize = passport.initialize();
@@ -46,7 +47,7 @@ const registerApp = (server, modenaConfig, appConfig) => {
 		routerPromise = new Promise((resolve, reject) => {
 			try
 			{
-				const appRouter = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
+				const appRouter: any = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
 				resolve(appRouter);
 			}
 			catch(error)
@@ -71,10 +72,8 @@ const registerApp = (server, modenaConfig, appConfig) => {
 	});	
 };
 
-const registerApps = (server, modenaConfig, appsConfig) => {
+export const registerApps = (server: express.Application, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
 	const tracedRegisterApp = tracer.trace(registerApp);
 	const registerPromises = appsConfig.map(appConfig => tracedRegisterApp(server, modenaConfig, appConfig));
 	return Promise.all(registerPromises);
 };
-
-module.exports = { registerApps };

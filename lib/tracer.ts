@@ -1,10 +1,10 @@
-const winston = require('winston');
-const { digitPrepender } = require('./format');
+import winston from 'winston';
+import { digitPrepender } from './format';
 
 let traceLevel = 'log';
 let stackLevel = 0;
 
-const formatter = value => digitPrepender(value, 0, 2);
+const formatter = (value: number) => digitPrepender(value, 0, 2);
 
 const getTimestamp = () => {
     var currentDate = new Date();
@@ -14,7 +14,7 @@ const getTimestamp = () => {
     return timestamp;
 };
 
-const evaluateArguments = (suppliedArguments) => {
+const evaluateArguments = (suppliedArguments: any) => {
     for (var index in suppliedArguments) {
         var argument = suppliedArguments[index];
         if (typeof argument === "undefined" || argument == null) {
@@ -23,7 +23,7 @@ const evaluateArguments = (suppliedArguments) => {
     }
 };
 
-const logArguments = (suppliedArguments) => {
+const logArguments = (suppliedArguments: any) => {
     var stringifiedArguments = '(';
     var keysNumber = Object.keys(suppliedArguments).length;
     for (var index in suppliedArguments) {
@@ -46,12 +46,12 @@ const logArguments = (suppliedArguments) => {
     return stringifiedArguments;
 };
 
-const getStackIndentation = (stackLevel) => Array(stackLevel).join('  ');
+const getStackIndentation = (stackLevel: number) => '\t'.repeat(stackLevel);
 
-const getLogHeader = (stackLevel) => getTimestamp() + getStackIndentation(stackLevel) + ' ';
+const getLogHeader = (stackLevel: number) => getTimestamp() + getStackIndentation(stackLevel) + ' ';
 
-const tracers = {
-    error: (functionExpression, thisObject) => {
+const tracers: any = {
+    error: (functionExpression: Function, thisObject: any) => {
         return function() {
             try {
                 return functionExpression.apply(thisObject, arguments);
@@ -63,7 +63,7 @@ const tracers = {
             }
         };
     },
-    log: (functionExpression, thisObject) => {
+    log: (functionExpression: Function, thisObject: any) => {
         return function() {
             try {
                 stackLevel++;
@@ -82,30 +82,30 @@ const tracers = {
     }
 };
 
-const trace = (functionExpression, thisObject) => {
+export const trace = (functionExpression: Function | string, thisObject?: any) => {
     var tracedFunction;
 
     if (thisObject == null) {
         tracedFunction = tracers[traceLevel](functionExpression, null);
     }
     else {
-        tracedFunction = tracers[traceLevel](thisObject[functionExpression], thisObject);
+        tracedFunction = tracers[traceLevel](thisObject[functionExpression as string], thisObject);
     }
 
     return tracedFunction;
 }
 
-const setTraceLevel = level => traceLevel = level;
+export const setTraceLevel = (level: string) => traceLevel = level;
 
-const info = (message) => {
-    winston.info(getLogHeader(stackLevel + 1) + message);
+export const info = (message: string) => {
+    winston.info(getLogHeader(stackLevel) + message);
 };
 
-const error = (message) => {
-    winston.error(getLogHeader(stackLevel + 1) + message);
+export const error = (message: string) => {
+    winston.error(getLogHeader(stackLevel) + message);
 };
 
-module.exports = {
+export default {
     error,
     info,
     trace,

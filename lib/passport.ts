@@ -1,25 +1,26 @@
-const passport = require('passport');
+import express from 'express';
+import passport from 'passport';
 const LocalStrategy = require('passport-local').Strategy;
-const tracer = require('./tracer');
+import tracer from './tracer';
 
 const userPrefixSeparator = '||->';
-let deserializers = {};
+const deserializers: any = {};
 
-const configurePassport = (server) => {
+export const configurePassport = (server: express.Application) => {
 
-	const userSerializer = function userSerializer(user, doneCallback) {
+	const userSerializer = (user: any, doneCallback: Function) => {
 		const namespace = user._namespace;
 		delete user._namespace;
 		const serializedUserId = namespace + userPrefixSeparator + user.id;
 		return doneCallback(null, serializedUserId);
 	};
 	
-	const userDeserializer = function userDeserializer(serializedUserId, doneCallback) {
+	const userDeserializer = (serializedUserId: string, doneCallback: Function) => {
 		const parts = serializedUserId.split(userPrefixSeparator);
 		const namespace = parts[0];
 		const userId = parts[1];
 		return deserializers[namespace](userId)
-		.then(user => {
+		.then((user: any) => {
 			if (!user) {
 				var error = {
 					message: 'Incorrect username or password'
@@ -34,21 +35,21 @@ const configurePassport = (server) => {
 	passport.deserializeUser(tracer.trace(userDeserializer));
 }
 
-const getStrategyCreator = (namespace) => {
+const getStrategyCreator = (namespace: string) => {
 	if (namespace.indexOf(userPrefixSeparator) > -1) {
 		tracer.error('Namespaces containing ' + userPrefixSeparator + ' are not valid');
 		return;
 	}
 	
-	return function createAuthenticationStrategy(handlers) {
+	return function createAuthenticationStrategy(handlers: any) {
 		deserializers[namespace] = handlers.userDeserializer;
 
 		const localStrategy = new LocalStrategy({
 			usernameField: 'username',
 			passwordField: 'password'
-		}, function (username, password, doneCallback) {
+		}, (username: string, password: string, doneCallback: Function) => {
 			return handlers.userAuthenticator(username, password)
-			.then(user => {
+			.then((user: any) => {
 				if (!user) {
 					const error = {
 						message: 'Incorrect username or password'
@@ -65,15 +66,15 @@ const getStrategyCreator = (namespace) => {
 	};
 };
 
-const getLogInMiddleware = (namespace) => {
-	return function logInMiddleware(req, res, next) {
+const getLogInMiddleware = (namespace: string) => {
+	return function logInMiddleware(req: any, res: any, next: Function) {
 
-		function doneCallback(error, user, info) {
+		function doneCallback(error: any, user: any, info: any) { 
 			if (error) {
 				return res.status(401).json(error);
 			}
 
-			req.logIn(user, function (error) {
+			req.logIn(user, function (error: any) {
 				if (error) {
 					return res.send(error);
 				}
@@ -85,12 +86,12 @@ const getLogInMiddleware = (namespace) => {
 	};
 }
 
-const logOutMiddleware = function logOutMiddleware(req, res, next) {
+const logOutMiddleware = function logOutMiddleware(req: any, res: any, next: Function) {
 	delete req.session.passport;
 	return next();
 };
 
-const getUserManagementUtils = namespace => {
+export const getUserManagementUtils = (namespace: string) => {
 	const userManagementUtils = {
 		createStrategy: tracer.trace(getStrategyCreator(namespace)),
 		logInMiddleware: tracer.trace(getLogInMiddleware(namespace)),
@@ -98,5 +99,3 @@ const getUserManagementUtils = namespace => {
 	};
 	return userManagementUtils;
 };
-
-module.exports = { configurePassport, getUserManagementUtils };

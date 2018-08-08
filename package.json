@@ -2,7 +2,7 @@
   "name": "modena",
   "version": "1.0.0-rc15",
   "description": "Express based web server with support for multiple isolated apps",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "test": "node tests/url-namespacing-should.js"
   },
@@ -16,6 +16,14 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.0",
+    "@types/express-session": "^1.15.10",
+    "@types/node": "^10.5.7",
+    "@types/node-sass": "^3.10.32",
+    "@types/passport": "^0.4.6",
+    "@types/passport-local": "^1.0.33"
   },
   "repository": {
     "type": "git",

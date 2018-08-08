@@ -1,19 +1,20 @@
-var { existsSync, mkdirSync, writeFile, readdirSync } = require('fs');
-var { join } = require('path');
-var { render } = require('node-sass');
+import { existsSync, mkdirSync, writeFile, readdirSync } from 'fs';
+import { join } from 'path';
+import { render } from 'node-sass';
+import { AppConfig } from './types';
 
-const ensureDirectory = directoryPath => {
+const ensureDirectory = (directoryPath: string) => {
 	if (!existsSync(directoryPath)){
 		mkdirSync(directoryPath);
 	}
 };
 
-const compileSassFile = (inputFile, outputFile) => {
+const compileSassFile = (inputFile: string, outputFile: string) => {
 	if (existsSync(inputFile)) {
 		var input = {
 			file: inputFile
 		};
-		var callback = function(error, result) {
+		var callback = function(error: any, result: any) {
 			if (error) {
 				console.log(error);
 			}
@@ -29,7 +30,7 @@ const compileSassFile = (inputFile, outputFile) => {
 	}
 };
 
-const compileSassFiles = (inputDirectory, outputDirectory) => {
+const compileSassFiles = (inputDirectory: string, outputDirectory: string) => {
 	var filenames = readdirSync(inputDirectory);
 	filenames.forEach(filename => {
 		var inputFile = join(inputDirectory, filename);
@@ -38,7 +39,7 @@ const compileSassFiles = (inputDirectory, outputDirectory) => {
 	});
 };
 
-const compileAppSass = appConfig => {
+export const compileAppSass = (appConfig: AppConfig) => {
 	var inputDirectory = join(appConfig.path, 'sass');
 	var assetsDirectory = join(appConfig.path, appConfig.assetsFolder);
 	var outputDirectory = join(assetsDirectory, 'css');
@@ -49,5 +50,3 @@ const compileAppSass = appConfig => {
 		compileSassFiles(inputDirectory, outputDirectory);
 	}
 };
-
-module.exports = { compileAppSass };

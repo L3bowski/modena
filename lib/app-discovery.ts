@@ -1,20 +1,22 @@
-const tracer = require('./tracer');
-const { lstatSync, readdirSync, existsSync } = require('fs');
-const { join } = require('path');
+import tracer from './tracer';
+import { lstatSync, readdirSync, existsSync } from 'fs';
+import { join } from 'path';
+import { ModenaConfig, AppConfig } from './types';
 
-const isDirectory = path => lstatSync(path).isDirectory();
+const isDirectory = (path: string) => lstatSync(path).isDirectory();
 
-const getDirectoriesName = path => readdirSync(path).filter(name => isDirectory(join(path, name)));
+const getDirectoriesName = (path: string) =>
+	readdirSync(path).filter(name => isDirectory(join(path, name)));
 
-const discoverApps = config => {
-	var appsFolderName = tracer.trace(getDirectoriesName)(config.appsFolder);
+export const discoverApps = (modenaConfig: ModenaConfig) => {
+	var appsFolderName = tracer.trace(getDirectoriesName)(modenaConfig.appsFolder);
 	
 	tracer.info('Discovered ' + appsFolderName.length + ' folders');
 
-	var appsConfig = appsFolderName.map(appName => {
-		var appPath = join(config.appsFolder, appName);
+	var appsConfig = appsFolderName.map((appName: string) => {
+		const appPath = join(modenaConfig.appsFolder, appName);
 
-		var appConfig = {
+		let appConfig: AppConfig = {
 			name: appName,
 			path: appPath,
 			assetsFolder: 'public'
@@ -43,5 +45,3 @@ const discoverApps = config => {
 
 	return appsConfig;
 }
-
-module.exports = { discoverApps };

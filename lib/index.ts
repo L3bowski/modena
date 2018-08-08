@@ -1,31 +1,32 @@
-const { configureWinston } = require('./lib/winston-config');
-const tracer = require('./lib/tracer');
-const express = require('express');
-const server = express();
-const { join } = require('path');
-const { configurePassport } = require('./lib/passport');
-const { discoverApps } = require('./lib/app-discovery');
-const { getAppResolverMiddleware } = require('./lib/app-resolver');
-const { registerApps } = require('./lib/app-register');
+import { configureWinston } from './winston-config';
+import tracer from './tracer';
+import express from 'express';
+import { join } from 'path';
+import { configurePassport } from './passport';
+import { discoverApps } from './app-discovery';
+import { getAppResolverMiddleware } from './app-resolver';
+import { registerApps } from './app-register';
+import { ModenaConfig, AppConfig } from './types';
 
-const defaultConfig = modenaConfig => {
-	modenaConfig.appsFolder = modenaConfig.appsFolder || join(__dirname, '..', '..', 'apps');
+const server = express();
+const defaultConfig = (modenaConfig: ModenaConfig) => {
+	modenaConfig.appsFolder = modenaConfig.appsFolder || join(__dirname, '..', '..', '..', 'apps');
 	modenaConfig.enableConsoleLogs = modenaConfig.enableConsoleLogs || 'false';
 	modenaConfig.logFilename = modenaConfig.logFilename || 'logs.txt';
 	modenaConfig.tracerLevel = modenaConfig.tracerLevel || 'error';
 	modenaConfig.PORT = modenaConfig.PORT || 80;
 };
 
-const overrideEnvironmentParameters = modenaConfig => {
+const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
 	const configProperties = Object.keys(modenaConfig);
 	const overridenPropeties = Object.keys(process.env).filter(p => configProperties.includes(p));
 	overridenPropeties.forEach(p => modenaConfig[p] = process.env[p]);
 };
 
-const extractAppsConfiguration = (modenaConfig, appsConfig) => {
+const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
 	appsConfig.forEach(appConfig => {
 		const appPropertiesKey = [];
-		for (key in modenaConfig) {
+		for (const key in modenaConfig) {
 			if (key.startsWith(appConfig.name)) {
 				appPropertiesKey.push(key);
 			}
@@ -38,7 +39,7 @@ const extractAppsConfiguration = (modenaConfig, appsConfig) => {
 	});
 };
 
-const runServer = modenaConfig => {
+const runServer = (modenaConfig: ModenaConfig) => {
 	defaultConfig(modenaConfig);
 	overrideEnvironmentParameters(modenaConfig);
 
@@ -72,7 +73,7 @@ const runServer = modenaConfig => {
 		}
 	
 		const tracedServerListen = tracer.trace('listen', server);
-		tracedServerListen(modenaConfig.PORT, function (error) {
+		tracedServerListen(modenaConfig.PORT, function (error: any) {
 			if (error) {
 				tracer.error(error);
 			}

@@ -1,6 +1,7 @@
-var winston = require('winston');
+import winston from 'winston';
+import { ModenaConfig } from './types';
 
-const configureWinston = modenaConfig => {
+export const configureWinston = (modenaConfig: ModenaConfig) => {
 	if (modenaConfig.enableConsoleLogs == 'false') {
 		winston.remove(winston.transports.Console);	
 	}
@@ -11,5 +12,3 @@ const configureWinston = modenaConfig => {
 		});
 	}
 };
-
-module.exports = { configureWinston };
