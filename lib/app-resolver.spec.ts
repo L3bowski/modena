@@ -1,15 +1,21 @@
-const { namespaceUrlByDomain, setNamespace } = require('../lib/app-resolver');
+import { namespaceUrlByDomain, setNamespace } from '../lib/app-resolver';
+import { AppConfig, ModenaConfig } from '../lib/types';
 
 const absoluteDomain = "absolute-domain.com";
 const localDomain = "localhost:3000";
 
-const absoluteApp = {
-    name: "absolute-app",
-    publicDomains: [ absoluteDomain ]
+const absoluteApp: AppConfig = {
+    name: 'absolute-app',
+    publicDomains: [ absoluteDomain ],
+    path: 'not-used',
+    assetsFolder: 'not-used'
 };    
 
-const localApp = {
-    name: "local-app"
+const localApp: AppConfig = {
+    name: 'local-app',
+    publicDomains: [ ],
+    path: 'not-used',
+    assetsFolder: 'not-used'
 };
     
 const apps = [ localApp, absoluteApp ];
@@ -78,8 +84,14 @@ const apps = [ localApp, absoluteApp ];
 })();
 
 (function resolve_accessed_app_for_base_url_without_trailing_slash() {
-    var config = {};
-    var req = {
+    var config: ModenaConfig = {
+        appsFolder: 'not-used',
+        enableConsoleLogs: false,
+        logFilename: 'not-used',
+        tracerLevel: 'not-used',
+        PORT: 0
+    };
+    var req: any = {
         url: '/local-app'
     };
     setNamespace(config, apps, req);
@@ -88,8 +100,14 @@ const apps = [ localApp, absoluteApp ];
 })();
 
 (function resolve_accessed_app_for_base_url_with_trailing_slash() {
-    var config = {};
-    var req = {
+    var config: ModenaConfig = {
+        appsFolder: 'not-used',
+        enableConsoleLogs: false,
+        logFilename: 'not-used',
+        tracerLevel: 'not-used',
+        PORT: 0
+    };
+    var req: any = {
         url: '/local-app/'
     };
     setNamespace(config, apps, req);
@@ -98,8 +116,14 @@ const apps = [ localApp, absoluteApp ];
 })();
 
 (function resolve_accessed_app_for_base_url_with_parameters_and_no_trailing_slash() {
-    var config = {};
-    var req = {
+    var config: ModenaConfig = {
+        appsFolder: 'not-used',
+        enableConsoleLogs: false,
+        logFilename: 'not-used',
+        tracerLevel: 'not-used',
+        PORT: 0
+    };
+    var req: any = {
         url: '/local-app?parameter=value'
     };
     setNamespace(config, apps, req);
@@ -108,8 +132,14 @@ const apps = [ localApp, absoluteApp ];
 })();
 
 (function resolve_accessed_app_for_base_url_with_parameters_and_no_trailing_slash() {
-    var config = {};
-    var req = {
+    var config: ModenaConfig = {
+        appsFolder: 'not-used',
+        enableConsoleLogs: false,
+        logFilename: 'not-used',
+        tracerLevel: 'not-used',
+        PORT: 0
+    };
+    var req: any = {
         url: '/local-app/?parameter=value'
     };
     setNamespace(config, apps, req);
@@ -118,10 +148,15 @@ const apps = [ localApp, absoluteApp ];
 })();
 
 (function resolve_accessed_app_for_default_app_base_url() {
-    var config = {
-        defaultApp: 'absolute-app'
+    var config: ModenaConfig = {
+        defaultApp: 'absolute-app',
+        appsFolder: 'not-used',
+        enableConsoleLogs: false,
+        logFilename: 'not-used',
+        tracerLevel: 'not-used',
+        PORT: 0
     };
-    var req = {
+    var req: any = {
         url: '/'
     };
     setNamespace(config, apps, req);
@@ -130,10 +165,12 @@ const apps = [ localApp, absoluteApp ];
 })();
 
 (function maintain_namespace_to_local_app_base_url_when_accessing_through_traversal_domain_app() {
-    const traversalApp = {
+    const traversalApp: AppConfig = {
         name: "traversal-app",
         publicDomains: [ absoluteDomain ],
-        allowNamespaceTraversal: true
+        allowNamespaceTraversal: true,
+        path: 'not-used',
+        assetsFolder: 'not-used'
     };
     const apps = [ traversalApp, localApp ];
     const baseUrl = '/local-app';

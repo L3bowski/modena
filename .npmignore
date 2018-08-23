@@ -1,6 +1,5 @@
-lib/
+lib/*.spec.ts
 node_modules/
-tests/
 .gitignore
 external-modules.d.ts
 tsconfig.json
