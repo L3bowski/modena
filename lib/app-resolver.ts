@@ -1,18 +1,18 @@
-import { ModenaConfig, AppConfig } from "./types";
-
-var tracer = require('./tracer');
-var { join } = require('path');
+import { ModenaConfig, AppConfig } from './types';
+import { info } from './tracer';
+import { join } from 'path';
 
 const getAppByNamespaceMatch = (appsConfig: AppConfig[], relativeUrl: string) => {
 	var matchingApp = appsConfig.find(appConfig => {
 		var regexBase = "\\/" + appConfig.name + "(\\/|\\?|$)"
 		var regex = new RegExp(regexBase, "g");
-		return relativeUrl.match(regex) ? appConfig : null;
+		return relativeUrl.match(regex) ? true : false;
 	});
 	return matchingApp;
 };
 
 const isolateViewsAccess = (namespace: string, res: any) => {
+	res._render = res.render;
 	res.render = function(viewName: string, parameters: any) {
 		var isolateView = join(namespace, 'views', viewName);
 		this._render(isolateView, parameters);
@@ -57,27 +57,26 @@ export const namespaceUrlByDomain = (appsConfig: AppConfig[], domain: string, re
 	return relativeUrl;
 };
 
-export const setNamespace = (modenConfig: ModenaConfig, appsConfig: AppConfig[], req: any) => {
+export const setNamespace = (modenaConfig: ModenaConfig, appsConfig: AppConfig[], req: any) => {
 	var accessedApp = getAppByNamespaceMatch(appsConfig, req.url);
 
 	if (accessedApp) {
 		req._namespace = accessedApp.name;
 	}
-	else if (modenConfig.defaultApp) {
-		req.url = namespaceRelativeUrl(modenConfig.defaultApp, req.url);
-		req._namespace = modenConfig.defaultApp;
+	else if (modenaConfig.defaultApp) {
+		req.url = namespaceRelativeUrl(modenaConfig.defaultApp, req.url);
+		req._namespace = modenaConfig.defaultApp;
 	}
 
 	// TODO Review what happens when !accessedApp & !defaultApp
 
-	tracer.info('Accessed app: ' + req._namespace);
+	info('Accessed app: ' + req._namespace);
 };
 
 export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => 
 	function resolvingApp(req: any, res: any, next: any) {
-		tracer.info('Relative url:' + req.url);
+		info('Relative url:' + req.url);
 
-		res._render = res.render;
 		req.url = namespaceUrlByQueryParameters(req.url, req.query);
 		req.url = namespaceUrlByDomain(appsConfig, req.headers.host, req.url);
 
