@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register lib/*.spec.ts"
+    "test": "mocha -r ts-node/register lib/*.test.ts"
   },
   "dependencies": {
     "body-parser": "^1.17.1",
@@ -19,12 +19,15 @@
     "winston": "^2.4.4"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.4",
     "@types/express": "^4.16.0",
     "@types/express-session": "^1.15.10",
+    "@types/mocha": "^5.2.5",
     "@types/node": "^10.5.7",
     "@types/node-sass": "^3.10.32",
     "@types/passport": "^0.4.6",
     "@types/passport-local": "^1.0.33",
+    "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "ts-node": "^7.0.1",
     "typescript": "^3.0.1"
