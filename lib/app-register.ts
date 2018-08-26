@@ -1,5 +1,5 @@
 import { join } from 'path';
-import express from 'express';
+import express, { Handler } from 'express';
 import assets from 'express-asset-versions';
 import { compileAppSass } from './sass-compiler';
 import session from 'express-session';
@@ -38,7 +38,7 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
 	}
 
 	let assetsPath = join(appConfig.path, appConfig.assetsFolder);
-	let routerPromise = Promise.resolve();
+	let routerPromise: Promise<Handler | void> = Promise.resolve();
 
 	if (appConfig.modenaSetupPath != null) {
 		const { configureRouter } = require(appConfig.modenaSetupPath);
@@ -47,7 +47,7 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
 		routerPromise = new Promise((resolve, reject) => {
 			try
 			{
-				const appRouter: any = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
+				const appRouter: Handler = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
 				resolve(appRouter);
 			}
 			catch(error)
