@@ -1,168 +1,213 @@
-import { namespaceUrlByDomain, setNamespace } from '../lib/app-resolver';
-import { AppConfig, ModenaConfig } from '../lib/types';
+import { getAccessedAppConfig, updateUrlPathname } from '../lib/app-resolver';
+import { AppConfig } from '../lib/types';
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-// TODO Disable console logs for the tests
-// TODO Use mocha.beforeEach
+// TODO Test http://poliester/app2 should be resolving to app1 if no traversal
 
-const absoluteDomain = 'absolute-domain.com';
-const localDomain = 'localhost:3000';
+// TODO Test http://capellas/app2 should be resolving to app2 if traversal
 
-const absoluteApp: AppConfig = {
-    name: 'absolute-app',
-    publicDomains: [ absoluteDomain ],
-    path: 'not-used',
-    assetsFolder: 'not-used'
-};    
+// TODO Test http://local/app1?$modena=app2 should be resolving to app2
 
-const localApp: AppConfig = {
-    name: 'local-app',
-    publicDomains: [ ],
-    path: 'not-used',
-    assetsFolder: 'not-used'
-};
-    
-const apps = [ localApp, absoluteApp ];
+const serializeQueryParameters = (queryParameters: any) => queryParameters.$modena ?
+    `?$modena=${queryParameters.$modena}` : ``;
+
+const testUrlResolution = (
+    urlDomain: string,
+    urlPathname: string,
+    urlSuffix: string,
+    queryParameters: any,
+    appsConfig: AppConfig[],
+    defaultApp: string,
+    expectedAccessedAppConfig: AppConfig,
+    expectedResolvedUrl: string) => {
+
+    const suffixedUrlPathname = urlPathname + urlSuffix;
+    const suffixedExpectedResolvedUrl = expectedResolvedUrl + urlSuffix;
+
+    const description =
+        `http://${urlDomain}${suffixedUrlPathname}${serializeQueryParameters(queryParameters)} ->
+          http://${urlDomain}${suffixedExpectedResolvedUrl}`;
+
+    it(description, () => {
+        
+        const accessedAppConfig =
+            getAccessedAppConfig(urlDomain, suffixedUrlPathname, queryParameters, appsConfig, defaultApp);
+        expect(accessedAppConfig).to.equal(expectedAccessedAppConfig);
+
+        const resolvedUrl = updateUrlPathname(accessedAppConfig.name, suffixedUrlPathname);
+        expect(resolvedUrl).to.equal(suffixedExpectedResolvedUrl);
+    });
+}
+
+const testSuffixedUrlsResolution = (
+    urlDomain: string,
+    urlPathname: string,
+    queryParameters: any,
+    appsConfig: AppConfig[],
+    defaultApp: string,
+    expectedAccessedAppConfig: AppConfig,
+    expectedResolvedUrl: string) => {
+
+    describe('Should resolve app base url (no trailing slash)', () => {
+        const urlSuffix = '';
+        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    });
+
+    describe('Should resolve app base url (with trailing slash)', () => {
+        const urlSuffix = '/';
+        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    });
+
+    describe('Should resolve app relative url (no trailing slash)', () => {
+        const urlSuffix = '/relative-path';
+        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    });
+
+    describe('Should resolve app relative url (with trailing slash)', () => {
+        const urlSuffix = '/relative-path/';
+        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    });
+}
 
 describe('App resolver', () => {
+    
+    const hostname = 'localhost:3000';
+    const publicDomain = 'public-domain-1.com';
+    const publicDomainWithTraversal = 'public-domain-2.com';
+    const publicDomainAppConfig: AppConfig = {
+        name: 'public-domain-app',
+        publicDomains: [publicDomain],
+        path: 'not-used',
+        assetsFolder: 'not-used'
+    };
+    const publicDomainAppConfigWithTaversal: AppConfig = {
+        name: 'public-domain-traversal-app',
+        publicDomains: [publicDomainWithTraversal],
+        path: 'not-used',
+        assetsFolder: 'not-used',
+        allowNamespaceTraversal: true,
+    };
+    const hostnameAppConfig1: AppConfig = {
+        name: 'hostname-app-1',
+        publicDomains: [],
+        path: 'not-used',
+        assetsFolder: 'not-used'
+    };
+    const hostnameAppConfig2: AppConfig = {
+        name: 'hostname-app-2',
+        publicDomains: [],
+        path: 'not-used',
+        assetsFolder: 'not-used'
+    };
+    const defaultAppConfig: AppConfig = {
+        name: 'default-app',
+        publicDomains: [],
+        path: 'not-used',
+        assetsFolder: 'not-used'
+    };
+    const appsConfig = [hostnameAppConfig1, hostnameAppConfig2, publicDomainAppConfig, publicDomainAppConfigWithTaversal, defaultAppConfig];
 
-    it('should prepend namespace to public domain app base url without trailing slash', () => {
-        const baseUrl = '';
-        const resolvedUrl = namespaceUrlByDomain(apps, absoluteDomain, baseUrl);
-        expect(resolvedUrl).to.equal('/absolute-app');
+    describe('Access through app name', () => {
+        testSuffixedUrlsResolution(
+            hostname,
+            `/${hostnameAppConfig1.name}`,
+            {},
+            appsConfig,
+            defaultAppConfig.name,
+            hostnameAppConfig1,
+            `/${hostnameAppConfig1.name}`);
     });
 
-    it('should prepend namespace to public domain app relative url', () => {
-        const relativeUrl = '/relative-path';
-        const resolvedUrl = namespaceUrlByDomain(apps, absoluteDomain, relativeUrl);
-        expect(resolvedUrl).to.equal('/absolute-app/relative-path');
+    describe('Access through query string parameter when exposed as hostname', () => {
+        const queryParameters = { $modena: hostnameAppConfig1.name };
+        testSuffixedUrlsResolution(
+            hostname,
+            '',
+            queryParameters,
+            appsConfig,
+            defaultAppConfig.name,
+            hostnameAppConfig1,
+            `/${hostnameAppConfig1.name}`);
     });
-    
-    it('should prepend namespace to public domain app asset url', () => {
-        const assetUrl = '/css/style.css';
-        const resolvedUrl = namespaceUrlByDomain(apps, absoluteDomain, assetUrl);
-        expect(resolvedUrl).to.equal('/absolute-app/css/style.css');
+
+    describe('Not access through app name when exposed as hostname and matching query parameter', () => {
+        testSuffixedUrlsResolution(
+            hostname,
+            `/${hostnameAppConfig1.name}`,
+            { $modena: hostnameAppConfig2.name },
+            appsConfig,
+            defaultAppConfig.name,
+            hostnameAppConfig2,
+            `/${hostnameAppConfig2.name}/${hostnameAppConfig1.name}`);
     });
-    
-    it('should maintain namespace to local app base url without trailing slash', () => {
-        const baseUrl = '/local-app';
-        const resolvedUrl = namespaceUrlByDomain(apps, localDomain, baseUrl);
-        expect(resolvedUrl).to.equal('/local-app');
+
+    describe('Not access through query string parameter when exposed as public domain and path traversal disabled', () => {
+        const queryParameters = { $modena: hostnameAppConfig1.name };
+        testSuffixedUrlsResolution(
+            publicDomain,
+            '',
+            queryParameters,
+            appsConfig,
+            defaultAppConfig.name,
+            publicDomainAppConfig,
+            `/${publicDomainAppConfig.name}`);
     });
-    
-    it('should maintain namespace to local app base url with trailing slash', () => {
-        const baseUrl = '/local-app/';
-        const resolvedUrl = namespaceUrlByDomain(apps, localDomain, baseUrl);
-        expect(resolvedUrl).to.equal('/local-app/');
+
+    describe('Access through query string parameter when exposed as public domain and path traversal enabled', () => {
+        const queryParameters = { $modena: hostnameAppConfig1.name };
+        testSuffixedUrlsResolution(
+            publicDomainWithTraversal,
+            '',
+            queryParameters,
+            appsConfig,
+            defaultAppConfig.name,
+            hostnameAppConfig1,
+            `/${hostnameAppConfig1.name}`);
     });
-    
-    it('should maintain namespace to local app relative url without trailing slash', () => {
-        const relativeUrl = '/local-app/relative-path';
-        const resolvedUrl = namespaceUrlByDomain(apps, localDomain, relativeUrl);
-        expect(resolvedUrl).to.equal('/local-app/relative-path');
+
+    describe('Access through public domain when path traversal disabled', () => {
+        testSuffixedUrlsResolution(
+            publicDomain,
+            '',
+            {},
+            appsConfig,
+            defaultAppConfig.name,
+            publicDomainAppConfig,
+            `/${publicDomainAppConfig.name}`);
     });
-    
-    it('should maintain namespace to local app relative url with trailing slash', () => {
-        const relativeUrl = '/local-app/relative-path/';
-        const resolvedUrl = namespaceUrlByDomain(apps, localDomain, relativeUrl);
-        expect(resolvedUrl).to.equal('/local-app/relative-path/');
+
+    describe('Access through public domain when path traversal enabled', () => {
+        testSuffixedUrlsResolution(
+            publicDomainWithTraversal,
+            '',
+            {},
+            appsConfig,
+            defaultAppConfig.name,
+            publicDomainAppConfigWithTaversal,
+            `/${publicDomainAppConfigWithTaversal.name}`);
     });
-    
-    it('should maintain namespace to local app asset url', () => {
-        const assetUrl = '/local-app/css/style.css';
-        const resolvedUrl = namespaceUrlByDomain(apps, localDomain, assetUrl);
-        expect(resolvedUrl).to.equal('/local-app/css/style.css');
+
+    describe('Access through default app', () => {
+        testSuffixedUrlsResolution(
+            hostname,
+            '',
+            {},
+            appsConfig,
+            defaultAppConfig.name,
+            defaultAppConfig,
+            `/${defaultAppConfig.name}`);
     });
-    
-    it('should resolve accessed app for base url without trailing slash', () => {
-        var config: ModenaConfig = {
-            appsFolder: 'not-used',
-            enableConsoleLogs: false,
-            logFilename: 'not-used',
-            tracerLevel: 'not-used',
-            PORT: 0
-        };
-        var req: any = {
-            url: '/local-app'
-        };
-        setNamespace(config, apps, req);
-        expect(req._namespace).to.equal('local-app');
+
+    describe('Keep unmodified an unresolvable url', () => {
+        const suffixedUrlPathname = '/non/existing';
+        const description = `http://${hostname}${suffixedUrlPathname} -> 
+        http://${hostname}${suffixedUrlPathname}`;
+
+        it(description, () => {
+            const accessedAppConfig =
+                getAccessedAppConfig(hostname, suffixedUrlPathname, {}, appsConfig, undefined);
+            expect(accessedAppConfig).to.equal(undefined);
+        });
     });
-    
-    it('should resolve accessed app for base url with trailing slash', () => {
-        var config: ModenaConfig = {
-            appsFolder: 'not-used',
-            enableConsoleLogs: false,
-            logFilename: 'not-used',
-            tracerLevel: 'not-used',
-            PORT: 0
-        };
-        var req: any = {
-            url: '/local-app/'
-        };
-        setNamespace(config, apps, req);
-        expect(req._namespace).to.equal('local-app');
-    });
-    
-    it('should resolve accessed app for base url with parameters and no trailing slash', () => {
-        var config: ModenaConfig = {
-            appsFolder: 'not-used',
-            enableConsoleLogs: false,
-            logFilename: 'not-used',
-            tracerLevel: 'not-used',
-            PORT: 0
-        };
-        var req: any = {
-            url: '/local-app?parameter=value'
-        };
-        setNamespace(config, apps, req);
-        expect(req._namespace).to.equal('local-app');
-    });
-    
-    it('should resolve accessed app for base url with parameters and no trailing slash', () => {
-        var config: ModenaConfig = {
-            appsFolder: 'not-used',
-            enableConsoleLogs: false,
-            logFilename: 'not-used',
-            tracerLevel: 'not-used',
-            PORT: 0
-        };
-        var req: any = {
-            url: '/local-app/?parameter=value'
-        };
-        setNamespace(config, apps, req);
-        expect(req._namespace).to.equal('local-app');
-    });
-    
-    it('should resolve accessed app for default app base url', () => {
-        var config: ModenaConfig = {
-            defaultApp: 'absolute-app',
-            appsFolder: 'not-used',
-            enableConsoleLogs: false,
-            logFilename: 'not-used',
-            tracerLevel: 'not-used',
-            PORT: 0
-        };
-        var req: any = {
-            url: '/'
-        };
-        setNamespace(config, apps, req);
-        expect(req._namespace).to.equal('absolute-app');
-    });
-    
-    it('should maintain namespace to local app base url when accessing through traversal domain app', () => {
-        const traversalApp: AppConfig = {
-            name: "traversal-app",
-            publicDomains: [ absoluteDomain ],
-            allowNamespaceTraversal: true,
-            path: 'not-used',
-            assetsFolder: 'not-used'
-        };
-        const apps = [ traversalApp, localApp ];
-        const baseUrl = '/local-app';
-        const resolvedUrl = namespaceUrlByDomain(apps, absoluteDomain, baseUrl);
-        expect(resolvedUrl).to.equal('/local-app');
-    });
-  
 });

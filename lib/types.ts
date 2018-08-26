@@ -4,6 +4,7 @@ export interface AppConfig {
 	path: string;
 	assetsFolder: string;
 	publicDomains?: string[];
+	allowNamespaceTraversal?: boolean;
 	[key: string]: any;
 }
 
@@ -23,5 +24,6 @@ export interface ModenaConfig {
 	logFilename: any;
 	tracerLevel: any;
 	PORT: any;
+	defaultApp?: string;
 	[key: string]: any;
 }

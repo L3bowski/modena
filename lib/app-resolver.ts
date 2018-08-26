@@ -2,24 +2,15 @@ import { ModenaConfig, AppConfig } from './types';
 import { info } from './tracer';
 import { join } from 'path';
 
-const getAppByNamespaceMatch = (appsConfig: AppConfig[], relativeUrl: string) => {
-	var matchingApp = appsConfig.find(appConfig => {
-		var regexBase = "\\/" + appConfig.name + "(\\/|\\?|$)"
-		var regex = new RegExp(regexBase, "g");
-		return relativeUrl.match(regex) ? true : false;
-	});
-	return matchingApp;
-};
-
 const isolateViewsAccess = (namespace: string, res: any) => {
 	res._render = res.render;
 	res.render = function(viewName: string, parameters: any) {
-		var isolateView = join(namespace, 'views', viewName);
+		const isolateView = join(namespace, 'views', viewName);
 		this._render(isolateView, parameters);
 	};
 };
 
-const namespaceRelativeUrl = (namespace: string, relativeUrl: string) => {
+export const updateUrlPathname = (namespace: string, relativeUrl: string) => {
 	var namespacePrefix = '/' + namespace;
 	var namespacedUrl = relativeUrl;
 
@@ -36,51 +27,66 @@ const namespaceRelativeUrl = (namespace: string, relativeUrl: string) => {
 	return namespacedUrl;
 };
 
-const namespaceUrlByQueryParameters = (relativeUrl: string, queryString: any) => {
-	if (queryString.$modena) {
-		relativeUrl = namespaceRelativeUrl(queryString.$modena, relativeUrl)
-	}
-	return relativeUrl;
-};
-
-export const namespaceUrlByDomain = (appsConfig: AppConfig[], domain: string, relativeUrl: string) => {
-	var domainAppAccess = appsConfig.find(appConfig =>
-		(appConfig.publicDomains != null &&
-		appConfig.publicDomains.find(d => domain.indexOf(d) > -1) != null));
+export const getAccessedAppConfig = (
+	urlDomain: string,
+	urlPathname: string,
+	queryParameters: any,
+	appsConfig: AppConfig[],
+	defaultApp?: string) => {
 	
-	if (domainAppAccess &&
-		(!domainAppAccess.allowNamespaceTraversal ||
-			getAppByNamespaceMatch(appsConfig, relativeUrl) == null)) {
-				relativeUrl = namespaceRelativeUrl(domainAppAccess.name, relativeUrl);
+	let accessedApp: AppConfig;
+		
+	// 1) Match by public domain (e.g.: appConfig.publicDomains.includes('http://public-domain.com'))
+	accessedApp = appsConfig.find(appConfig => {
+		return appConfig.publicDomains != null &&
+			appConfig.publicDomains.find(domain => domain == urlDomain) != null;
+	});
+
+	// Apps exposed to a public domain might allow accessing other apps from the domain by app name
+	// (e.g. app1 is exposed at http://domain.com along with http://domain.com/app1-endpoint, but still
+	// http://domain.com/app2 and http://domain.com?$modena=app2 are accessible).
+	// In that case (allowNamespaceTraversal), the actual accessedApp might be a another one
+
+	if (!accessedApp || accessedApp.allowNamespaceTraversal) {
+
+		// 2) Match by query string parameters (e.g: http://localhost?$modena=app-name)
+		if (queryParameters.$modena) {
+			accessedApp = appsConfig.find(appConfig => appConfig.name === queryParameters.$modena);
+		}
+
+		if (!accessedApp) {
+			// 3) Match by app name (e.g: http://localhost/app-name)
+			accessedApp = appsConfig.find(appConfig => {
+				var regexBase = "\\/" + appConfig.name + "(\\/|\\?|$)"
+				var regex = new RegExp(regexBase, "g");
+				return urlPathname.match(regex) ? true : false;
+			});
+		}
 	}
 
-	return relativeUrl;
+	if (!accessedApp && defaultApp) {
+		accessedApp = appsConfig.find(appConfig => appConfig.name === defaultApp);
+	}
+
+	return accessedApp;
 };
 
-export const setNamespace = (modenaConfig: ModenaConfig, appsConfig: AppConfig[], req: any) => {
-	var accessedApp = getAppByNamespaceMatch(appsConfig, req.url);
-
-	if (accessedApp) {
-		req._namespace = accessedApp.name;
-	}
-	else if (modenaConfig.defaultApp) {
-		req.url = namespaceRelativeUrl(modenaConfig.defaultApp, req.url);
-		req._namespace = modenaConfig.defaultApp;
-	}
-
-	// TODO Review what happens when !accessedApp & !defaultApp
-
-	info('Accessed app: ' + req._namespace);
-};
-
-export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => 
-	function resolvingApp(req: any, res: any, next: any) {
+export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
+	const appResolverMiddleware = (req: any, res: any, next: any) => {
 		info('Relative url:' + req.url);
 
-		req.url = namespaceUrlByQueryParameters(req.url, req.query);
-		req.url = namespaceUrlByDomain(appsConfig, req.headers.host, req.url);
+		const accessedApp = getAccessedAppConfig(req.headers.host, req.url, req.query, appsConfig, modenaConfig.defaultApp);
+		if (accessedApp) {
+			info('Accessed app: ' + accessedApp.name);
+			req._namespace = accessedApp.name;
+			req.url = updateUrlPathname(accessedApp.name, req.url);
+			isolateViewsAccess(accessedApp.name, res);
+		}
+		else {
+			info('Could not resolve the url to any of the existing apps...');
+		}
 
-		setNamespace(modenaConfig, appsConfig, req);
-		isolateViewsAccess(req._namespace, res);
 		return next();
 	};
+	return appResolverMiddleware;
+}
