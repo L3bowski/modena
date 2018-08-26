@@ -1,11 +1,12 @@
 {
   "name": "modena",
-  "version": "1.0.0-rc19",
+  "version": "1.0.0",
   "description": "Express based web server with support for multiple isolated apps",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register lib/*.test.ts"
+    "test": "mocha -r ts-node/register lib/*.test.ts",
+    "npm-publish": "tsc -d && npm publish"
   },
   "dependencies": {
     "body-parser": "^1.17.1",
