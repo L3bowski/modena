@@ -1,4 +1,4 @@
-lib/*.spec.ts
+lib/
 node_modules/
 .gitignore
 external-modules.d.ts
