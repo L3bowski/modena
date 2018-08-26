@@ -91,3 +91,9 @@ export default {
 	runServer,
 	tracer
 };
+
+module.exports = {
+	express,
+	runServer,
+	tracer
+};
