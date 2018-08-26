@@ -11,7 +11,7 @@ import { ModenaConfig, AppConfig } from './types';
 const server = express();
 const defaultConfig = (modenaConfig: ModenaConfig) => {
 	// When following line is executed, __dirname equals:
-	// project/node_modules/modena/build/app-discovery
+	// project/node_modules/modena/build/index
 	modenaConfig.appsFolder = modenaConfig.appsFolder || join(__dirname, '..', '..', '..', '..', 'apps');
 	modenaConfig.enableConsoleLogs = modenaConfig.enableConsoleLogs || 'false';
 	modenaConfig.logFilename = modenaConfig.logFilename || 'logs.txt';
