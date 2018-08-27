@@ -1,7 +1,7 @@
+import { expect } from 'chai';
+import { describe, it } from 'mocha';
 import { getAccessedAppConfig, updateUrlPathname } from '../lib/app-resolver';
 import { AppConfig } from '../lib/types';
-import { describe, it } from 'mocha';
-import { expect } from 'chai';
 
 // TODO Test http://poliester/app2 should be resolving to app1 if no traversal
 
@@ -38,7 +38,7 @@ const testUrlResolution = (
         const resolvedUrl = updateUrlPathname(accessedAppConfig.name, suffixedUrlPathname);
         expect(resolvedUrl).to.equal(suffixedExpectedResolvedUrl);
     });
-}
+};
 
 const testSuffixedUrlsResolution = (
     urlDomain: string,
@@ -68,7 +68,7 @@ const testSuffixedUrlsResolution = (
         const urlSuffix = '/relative-path/';
         testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
     });
-}
+};
 
 describe('App resolver', () => {
     
@@ -81,7 +81,7 @@ describe('App resolver', () => {
         path: 'not-used',
         assetsFolder: 'not-used'
     };
-    const publicDomainAppConfigWithTaversal: AppConfig = {
+    const publicDomainAppConfigWithTraversal: AppConfig = {
         name: 'public-domain-traversal-app',
         publicDomains: [publicDomainWithTraversal],
         path: 'not-used',
@@ -106,7 +106,7 @@ describe('App resolver', () => {
         path: 'not-used',
         assetsFolder: 'not-used'
     };
-    const appsConfig = [hostnameAppConfig1, hostnameAppConfig2, publicDomainAppConfig, publicDomainAppConfigWithTaversal, defaultAppConfig];
+    const appsConfig = [hostnameAppConfig1, hostnameAppConfig2, publicDomainAppConfig, publicDomainAppConfigWithTraversal, defaultAppConfig];
 
     describe('Access through app name', () => {
         testSuffixedUrlsResolution(
@@ -184,8 +184,8 @@ describe('App resolver', () => {
             {},
             appsConfig,
             defaultAppConfig.name,
-            publicDomainAppConfigWithTaversal,
-            `/${publicDomainAppConfigWithTaversal.name}`);
+            publicDomainAppConfigWithTraversal,
+            `/${publicDomainAppConfigWithTraversal.name}`);
     });
 
     describe('Access through default app', () => {
@@ -199,7 +199,7 @@ describe('App resolver', () => {
             `/${defaultAppConfig.name}`);
     });
 
-    describe('Keep unmodified an unresolvable url', () => {
+    describe('Keep unmodified a non-resolvable url', () => {
         const suffixedUrlPathname = '/non/existing';
         const description = `http://${hostname}${suffixedUrlPathname} -> 
         http://${hostname}${suffixedUrlPathname}`;

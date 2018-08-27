@@ -7,27 +7,27 @@ let stackLevel = 0;
 const formatter = (value: number) => digitPrepender(value, 0, 2);
 
 const getTimestamp = () => {
-    var currentDate = new Date();
-    var timestamp = formatter(
+    const currentDate = new Date();
+    const timestamp = formatter(
         currentDate.getHours()) + ':' + formatter(currentDate.getMinutes()) + ':' +
         formatter(currentDate.getSeconds());
     return timestamp;
 };
 
 const evaluateArguments = (suppliedArguments: any) => {
-    for (var index in suppliedArguments) {
-        var argument = suppliedArguments[index];
-        if (typeof argument === "undefined" || argument == null) {
+    for (const index in suppliedArguments) {
+        const argument = suppliedArguments[index];
+        if (typeof argument === 'undefined' || argument == null) {
             winston.info('Parameter ' + index + ' is null or undefined...');
         }
     }
 };
 
 const logArguments = (suppliedArguments: any) => {
-    var stringifiedArguments = '(';
-    var keysNumber = Object.keys(suppliedArguments).length;
-    for (var index in suppliedArguments) {
-        var argument = suppliedArguments[index];
+    let stringifiedArguments = '(';
+    let keysNumber = Object.keys(suppliedArguments).length;
+    for (const index in suppliedArguments) {
+        const argument = suppliedArguments[index];
         if (typeof argument === 'object') {
             stringifiedArguments += '{}';
         }
@@ -46,9 +46,9 @@ const logArguments = (suppliedArguments: any) => {
     return stringifiedArguments;
 };
 
-const getStackIndentation = (stackLevel: number) => '\t'.repeat(stackLevel);
+const getStackIndentation = (_stackLevel: number) => '\t'.repeat(_stackLevel);
 
-const getLogHeader = (stackLevel: number) => getTimestamp() + getStackIndentation(stackLevel) + ' ';
+const getLogHeader = (_stackLevel: number) => getTimestamp() + getStackIndentation(_stackLevel) + ' ';
 
 const tracers: any = {
     error: (functionExpression: Function, thisObject: any) => {
@@ -69,7 +69,7 @@ const tracers: any = {
                 stackLevel++;
                 winston.info(getLogHeader(stackLevel) + functionExpression.name + logArguments(arguments));
                 evaluateArguments(arguments);
-                var result = functionExpression.apply(thisObject, arguments);
+                const result = functionExpression.apply(thisObject, arguments);
                 stackLevel--;
                 return result;
             }
@@ -83,7 +83,7 @@ const tracers: any = {
 };
 
 export const trace = (functionExpression: Function | string, thisObject?: any) => {
-    var tracedFunction;
+    let tracedFunction;
 
     if (thisObject == null) {
         tracedFunction = tracers[traceLevel](functionExpression, null);
@@ -93,7 +93,7 @@ export const trace = (functionExpression: Function | string, thisObject?: any) =
     }
 
     return tracedFunction;
-}
+};
 
 export const setTraceLevel = (level: string) => traceLevel = level;
 
