@@ -26,8 +26,8 @@ const testUrlResolution = (
     const suffixedExpectedResolvedUrl = expectedResolvedUrl + urlSuffix;
 
     const description =
-        `http://${urlDomain}${suffixedUrlPathname}${serializeQueryParameters(queryParameters)} ->
-          http://${urlDomain}${suffixedExpectedResolvedUrl}`;
+        `http://${urlDomain}${suffixedUrlPathname}${serializeQueryParameters(queryParameters)}
+        -> http://${urlDomain}${suffixedExpectedResolvedUrl}`;
 
     it(description, () => {
         
@@ -49,32 +49,17 @@ const testSuffixedUrlsResolution = (
     expectedAccessedAppConfig: AppConfig,
     expectedResolvedUrl: string) => {
 
-    describe('Should resolve app base url (no trailing slash)', () => {
-        const urlSuffix = '';
-        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
-    });
-
-    describe('Should resolve app base url (with trailing slash)', () => {
-        const urlSuffix = '/';
-        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
-    });
-
-    describe('Should resolve app relative url (no trailing slash)', () => {
-        const urlSuffix = '/relative-path';
-        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
-    });
-
-    describe('Should resolve app relative url (with trailing slash)', () => {
-        const urlSuffix = '/relative-path/';
-        testUrlResolution(urlDomain, urlPathname, urlSuffix, queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
-    });
+    testUrlResolution(urlDomain, urlPathname, '', queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    testUrlResolution(urlDomain, urlPathname, '/', queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    testUrlResolution(urlDomain, urlPathname, '/relative-path', queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
+    testUrlResolution(urlDomain, urlPathname, '/relative-path/', queryParameters, appsConfig, defaultApp, expectedAccessedAppConfig, expectedResolvedUrl);
 };
 
 describe('App resolver', () => {
     
     const hostname = 'localhost:3000';
-    const publicDomain = 'public-domain-1.com';
-    const publicDomainWithTraversal = 'public-domain-2.com';
+    const publicDomain = 'public-domain.com';
+    const publicDomainWithTraversal = 'traversal-public-domain.com';
     const publicDomainAppConfig: AppConfig = {
         name: 'public-domain-app',
         publicDomains: [publicDomain],
@@ -201,8 +186,8 @@ describe('App resolver', () => {
 
     describe('Keep unmodified a non-resolvable url', () => {
         const suffixedUrlPathname = '/non/existing';
-        const description = `http://${hostname}${suffixedUrlPathname} -> 
-        http://${hostname}${suffixedUrlPathname}`;
+        const description = `http://${hostname}${suffixedUrlPathname}
+        -> http://${hostname}${suffixedUrlPathname}`;
 
         it(description, () => {
             const accessedAppConfig =
