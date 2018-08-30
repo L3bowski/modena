@@ -8,7 +8,6 @@ import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
 import { configureWinston } from './winston-config';
 
-const server = express();
 const defaultConfig = (modenaConfig: ModenaConfig) => {
     // When following line is executed, __dirname equals:
     // project/node_modules/modena/build
@@ -44,13 +43,13 @@ const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppCon
 export const runServer = (modenaConfig: ModenaConfig) => {
     defaultConfig(modenaConfig);
     overrideEnvironmentParameters(modenaConfig);
-
     configureWinston(modenaConfig);
-
     tracer.setTraceLevel(modenaConfig.tracerLevel);
 
     tracer.info('Starting modena with following configuration');
     Object.keys(modenaConfig).forEach(key => tracer.info(key +':', modenaConfig[key]));
+
+    const server = express();
     
     server.set('view engine', 'ejs');
     
@@ -63,7 +62,7 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     const appsConfig = tracedDiscoverApps(modenaConfig);
     extractAppsConfiguration(modenaConfig, appsConfig);
 
-    if (typeof modenaConfig.beforeRegisteringApps === 'function') {
+    if (modenaConfig.beforeRegisteringApps) {
         modenaConfig.beforeRegisteringApps(server, tracer, modenaConfig, appsConfig);
     }
 
@@ -73,7 +72,7 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     const tracedRegisterApps = tracer.trace(registerApps);
     tracedRegisterApps(server, modenaConfig, appsConfig)
     .then(() => {
-        if (typeof modenaConfig.afterRegisteringApps === 'function') {
+        if (modenaConfig.afterRegisteringApps) {
             modenaConfig.afterRegisteringApps(server, tracer, modenaConfig, appsConfig);
         }
     
