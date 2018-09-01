@@ -46,6 +46,10 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     configureWinston(modenaConfig);
     tracer.setTraceLevel(modenaConfig.tracerLevel);
 
+    tracer.info('Starting modena with following configuration');
+    // TODO Update after tracer simplification
+    Object.keys(modenaConfig).forEach(key => console.log(key +':', modenaConfig[key]));
+
     const server = express();
     
     server.set('view engine', 'ejs');
