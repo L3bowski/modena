@@ -75,7 +75,7 @@ export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig:
     const appResolverMiddleware = (req: any, res: any, next: any) => {
         info('Relative url:' + req.url);
 
-        const accessedApp = getAccessedAppConfig(req.headers.host, req.url, req.query, appsConfig, modenaConfig.defaultApp);
+        const accessedApp = getAccessedAppConfig(req.headers.host, req.url, req.query, appsConfig, modenaConfig.DEFAULT_APP);
         if (accessedApp) {
             info('Accessed app: ' + accessedApp.name);
             req._namespace = accessedApp.name;

@@ -9,12 +9,12 @@ const getDirectoriesName = (path: string) =>
     readdirSync(path).filter(name => isDirectory(join(path, name)));
 
 export const discoverApps = (modenaConfig: ModenaConfig) => {
-    const appsFolderName = tracer.trace(getDirectoriesName)(modenaConfig.appsFolder);
+    const appsFolderName = tracer.trace(getDirectoriesName)(modenaConfig.APPS_FOLDER);
     
     tracer.info('Discovered ' + appsFolderName.length + ' folders');
 
     const appsConfig = appsFolderName.map((appName: string) => {
-        const appPath = join(modenaConfig.appsFolder, appName);
+        const appPath = join(modenaConfig.APPS_FOLDER, appName);
 
         const appConfig: AppConfig = {
             name: appName,
