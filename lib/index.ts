@@ -9,9 +9,11 @@ import { AppConfig, ModenaConfig } from './types';
 import { configureWinston } from './winston-config';
 
 const defaultConfig = (modenaConfig: ModenaConfig) => {
-    // When following line is executed, __dirname equals:
-    // project/node_modules/modena/build
+    // When following line is executed, __dirname equals XXX/node_modules/modena/build
+    modenaConfig.afterRegisteringApps = modenaConfig.afterRegisteringApps || null;
     modenaConfig.appsFolder = modenaConfig.appsFolder || join(__dirname, '..', '..', '..', 'apps');
+    modenaConfig.beforeRegisteringApps = modenaConfig.beforeRegisteringApps || null;
+    modenaConfig.defaultApp = modenaConfig.defaultApp || null;
     modenaConfig.enableConsoleLogs = modenaConfig.enableConsoleLogs || 'false';
     modenaConfig.logFilename = modenaConfig.logFilename || 'logs.txt';
     modenaConfig.tracerLevel = modenaConfig.tracerLevel || 'error';
