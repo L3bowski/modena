@@ -16,8 +16,9 @@ const defaultConfig = (modenaConfig: ModenaConfig) => {
     modenaConfig.DEFAULT_APP = modenaConfig.DEFAULT_APP || null;
     modenaConfig.ENABLE_CONSOLE_LOGS = modenaConfig.ENABLE_CONSOLE_LOGS || 'false';
     modenaConfig.LOG_FILENAME = modenaConfig.LOG_FILENAME || 'logs.txt';
-    modenaConfig.TRACER_LEVEL = modenaConfig.TRACER_LEVEL || 'error';
     modenaConfig.PORT = modenaConfig.PORT || 80;
+    modenaConfig.SESSION_SECRET = modenaConfig.SESSION_SECRET || null;
+    modenaConfig.TRACER_LEVEL = modenaConfig.TRACER_LEVEL || 'error';
 };
 
 const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {

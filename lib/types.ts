@@ -21,13 +21,13 @@ export interface AppUtils {
 // The ModenaConfig properties use SNAKE_CASE for Docker compatibility
 export interface ModenaConfig {
     APPS_FOLDER: string;
+    DEFAULT_APP?: string;
     ENABLE_CONSOLE_LOGS: any;
     LOG_FILENAME: any;
-    TRACER_LEVEL: any;
     PORT: any;
-    DEFAULT_APP?: string;
     SESSION_SECRET?: string;
-    beforeRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
+    TRACER_LEVEL: any;
     afterRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
+    beforeRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     [key: string]: any;
 }
