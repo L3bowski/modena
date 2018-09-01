@@ -1,8 +1,12 @@
 .nyc_output/
 .vscode/
 lib/
+build/*.map.js
+build/*.d.ts
+!build/index.d.ts
 node_modules/
 .gitignore
 external-modules.d.ts
 tsconfig.json
+tslint.json
 *.log
