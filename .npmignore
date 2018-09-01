@@ -1,7 +1,7 @@
 .nyc_output/
 .vscode/
 lib/
-build/*.map.js
+build/*.js.map
 build/*.d.ts
 !build/index.d.ts
 node_modules/
