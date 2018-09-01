@@ -14,7 +14,7 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
 
     const jsonMiddleware = bodyParser.json();
     const sessionMiddleware = session({
-        secret: modenaConfig.sessionSecret,
+        secret: modenaConfig.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
         name: appConfig.name
