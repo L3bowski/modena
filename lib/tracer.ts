@@ -97,12 +97,12 @@ export const trace = (functionExpression: Function | string, thisObject?: any) =
 
 export const setTraceLevel = (level: string) => traceLevel = level;
 
-export const info = (message: string, ...meta: any[]) => {
-    winston.info(getLogHeader(stackLevel), message, ...meta);
+export const info = (message: string) => {
+    winston.info(getLogHeader(stackLevel) + message);
 };
 
-export const error = (message: string, ...meta: any[]) => {
-    winston.error(getLogHeader(stackLevel), message, ...meta);
+export const error = (message: string) => {
+    winston.error(getLogHeader(stackLevel) + message);
 };
 
 export default {
