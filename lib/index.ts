@@ -22,9 +22,7 @@ const defaultConfig = (modenaConfig: ModenaConfig) => {
 };
 
 const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
-    const configProperties = Object.keys(modenaConfig);
-    const overridenProperties = Object.keys(process.env).filter(p => configProperties.includes(p));
-    overridenProperties.forEach(p => modenaConfig[p] = process.env[p]);
+    Object.keys(process.env).forEach(key => modenaConfig[key] = process.env[key]);
 };
 
 const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
