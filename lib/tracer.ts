@@ -2,6 +2,7 @@ import winston from 'winston';
 import { digitPrepender } from './format';
 
 let stackLevel = 0;
+let activeTrace = false;
 
 const evaluateArguments = (...parameters: any[]) => {
     for (const index in parameters) {
@@ -28,6 +29,7 @@ const getTimestamp = () => {
 
 const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
     return (...parameters: any[]) => {
+        startTrace();
         try {
             stackLevel++;
             winston.info(getLogHeader(stackLevel) + functionExpression.name + logArguments(...parameters));
@@ -78,11 +80,24 @@ export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | str
     return tracedFunction;
 };
 
+const startTrace = () => {
+    if (!activeTrace) {
+        console.log('Trace start: ' + getTimestamp() + '-------------------------');
+        activeTrace = true;
+        setImmediate(() => {
+            activeTrace = false;
+            console.log('Trace end: ' + getTimestamp() + '-------------------------');
+        });
+    }
+};
+
 export const info = (message: string) => {
+    startTrace();
     winston.info(getLogHeader(stackLevel) + message);
 };
 
 export const error = (message: string) => {
+    startTrace();
     winston.error(getLogHeader(stackLevel) + message);
 };
 
