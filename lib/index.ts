@@ -1,10 +1,9 @@
 import express from 'express';
-import { RequestHandlerParams } from 'express-serve-static-core';
 import { join } from 'path';
-import { discoverApps } from './app-discovery';
-import { registerApps } from './app-register';
+import { tracedDiscoverApps } from './app-discovery';
+import { tracedRegisterApps } from './app-register';
 import { getAppResolverMiddleware } from './app-resolver';
-import { configurePassport } from './passport';
+import { tracedConfigurePassport } from './passport';
 import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
 import { configureWinston } from './winston-config';
@@ -58,29 +57,25 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     
     server.set('views', modenaConfig.APPS_FOLDER);
 
-    const tracedConfigurePassport = tracer.trace(configurePassport);
     tracedConfigurePassport(server);
 
-    const tracedDiscoverApps = tracer.trace(discoverApps);
     const appsConfig = tracedDiscoverApps(modenaConfig);
+
     extractAppsConfiguration(modenaConfig, appsConfig);
 
     if (modenaConfig.beforeRegisteringApps) {
         modenaConfig.beforeRegisteringApps(server, tracer, modenaConfig, appsConfig);
     }
 
-    const tracedAppResolverMiddleware = tracer.trace(getAppResolverMiddleware(modenaConfig, appsConfig));
-    server.use(tracedAppResolverMiddleware);
+    server.use(getAppResolverMiddleware(modenaConfig, appsConfig));
 
-    const tracedRegisterApps = tracer.trace(registerApps);
     tracedRegisterApps(server, modenaConfig, appsConfig)
     .then(() => {
         if (modenaConfig.afterRegisteringApps) {
             modenaConfig.afterRegisteringApps(server, tracer, modenaConfig, appsConfig);
         }
     
-        const tracedServerListen = tracer.trace('listen', server);
-        tracedServerListen(modenaConfig.PORT, function (error: any) {
+        server.listen(modenaConfig.PORT, function (error: any) {
             if (error) {
                 tracer.error(error);
             }

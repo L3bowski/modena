@@ -77,3 +77,5 @@ export const registerApps = (server: express.Application, modenaConfig: ModenaCo
     const registerPromises = appsConfig.map(appConfig => tracedRegisterApp(server, modenaConfig, appConfig));
     return Promise.all(registerPromises);
 };
+
+export const tracedRegisterApps = tracer.trace(registerApps);

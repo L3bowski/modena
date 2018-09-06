@@ -92,6 +92,8 @@ const logOutMiddleware = (req: any, res: any, next: Function) => {
     return next();
 };
 
+export const tracedConfigurePassport = tracer.trace(configurePassport);
+
 export const getUserManagementUtils = (namespace: string) => {
     const userManagementUtils = {
         createStrategy: tracer.trace(getStrategyCreator(namespace)),
