@@ -1,4 +1,5 @@
 import express from 'express';
+import { RequestHandlerParams } from 'express-serve-static-core';
 import { join } from 'path';
 import { discoverApps } from './app-discovery';
 import { registerApps } from './app-register';
@@ -18,7 +19,6 @@ const defaultConfig = (modenaConfig: ModenaConfig) => {
     modenaConfig.LOG_FILENAME = modenaConfig.LOG_FILENAME || 'logs.txt';
     modenaConfig.PORT = modenaConfig.PORT || 80;
     modenaConfig.SESSION_SECRET = modenaConfig.SESSION_SECRET || null;
-    modenaConfig.TRACER_LEVEL = modenaConfig.TRACER_LEVEL || 'error';
 };
 
 const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
@@ -47,7 +47,6 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     defaultConfig(modenaConfig);
     overrideEnvironmentParameters(modenaConfig);
     configureWinston(modenaConfig);
-    tracer.setTraceLevel(modenaConfig.TRACER_LEVEL);
 
     tracer.info('Starting modena with following configuration');
     // TODO Update after tracer simplification
