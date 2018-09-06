@@ -3,9 +3,9 @@ import { digitPrepender } from './format';
 
 let stackLevel = 0;
 
-const evaluateArguments = (suppliedArguments: any) => {
-    for (const index in suppliedArguments) {
-        const argument = suppliedArguments[index];
+const evaluateArguments = (...parameters: any[]) => {
+    for (const index in parameters) {
+        const argument = parameters[index];
         if (typeof argument === 'undefined' || argument == null) {
             winston.info('Parameter ' + index + ' is null or undefined...');
         }
@@ -26,13 +26,13 @@ const getTimestamp = () => {
     return timestamp;
 };
 
-const log = <T>(functionExpression: (...params: any[]) => T, thisObject: any) => {
-    return (...params: any[]) => {
+const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
+    return (...parameters: any[]) => {
         try {
             stackLevel++;
-            winston.info(getLogHeader(stackLevel) + functionExpression.name + logArguments(arguments));
-            evaluateArguments(arguments);
-            const result: T = functionExpression.apply(thisObject, arguments);
+            winston.info(getLogHeader(stackLevel) + functionExpression.name + logArguments(...parameters));
+            evaluateArguments(...parameters);
+            const result: T = functionExpression.call(thisObject, ...parameters);
             stackLevel--;
             return result;
         }
@@ -44,11 +44,11 @@ const log = <T>(functionExpression: (...params: any[]) => T, thisObject: any) =>
     };
 };
     
-const logArguments = (suppliedArguments: any) => {
+const logArguments = (...parameters: any[]) => {
     let stringifiedArguments = '(';
-    let keysNumber = Object.keys(suppliedArguments).length;
-    for (const index in suppliedArguments) {
-        const argument = suppliedArguments[index];
+    let keysNumber = Object.keys(parameters).length;
+    for (const index in parameters) {
+        const argument = parameters[index];
         if (typeof argument === 'object') {
             stringifiedArguments += '{}';
         }
@@ -67,8 +67,8 @@ const logArguments = (suppliedArguments: any) => {
     return stringifiedArguments;
 };
 
-export const trace = <T>(functionExpression: ((...params: any[]) => T) | string, thisObject?: any) => {
-    let tracedFunction: (...params: any[]) => T;
+export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | string, thisObject?: any) => {
+    let tracedFunction: (...parameters: any[]) => T;
     if (typeof functionExpression === 'function') {
         tracedFunction = log(functionExpression, null);
     }
