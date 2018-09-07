@@ -47,8 +47,7 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     tracer.setUpTracer(modenaConfig);
 
     tracer.info('Starting modena with following configuration');
-    // TODO Update after tracer simplification
-    Object.keys(modenaConfig).forEach(key => console.log(key +':', modenaConfig[key]));
+    Object.keys(modenaConfig).forEach(key => tracer.info(key + ': ' + modenaConfig[key]));
 
     const server = express();
     
