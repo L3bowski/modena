@@ -1,51 +1,48 @@
 import winston from 'winston';
-import { digitPrepender } from './format';
+import { indent, stringifyTo2Digits } from './format';
 
-let stackLevel = 0;
 let activeTrace = false;
+let callStackDepth = 0;
 
-const evaluateArguments = (...parameters: any[]) => {
-    for (const index in parameters) {
-        const argument = parameters[index];
-        if (typeof argument === 'undefined' || argument == null) {
-            winston.info('Parameter ' + index + ' is null or undefined...');
-        }
-    }
+export const error = (...params: any[]) => {
+    startTrace();
+    const indentedParams = [indent(callStackDepth), ...params];
+    winston.error.apply(winston, indentedParams);
 };
-
-const formatter = (value: number) => digitPrepender(value, 0, 2);
-
-const getLogHeader = (_stackLevel: number) => getTimestamp() + getStackIndentation(_stackLevel) + ' ';
-
-const getStackIndentation = (_stackLevel: number) => '\t'.repeat(_stackLevel);
 
 const getTimestamp = () => {
     const currentDate = new Date();
-    const timestamp = formatter(
-        currentDate.getHours()) + ':' + formatter(currentDate.getMinutes()) + ':' +
-        formatter(currentDate.getSeconds());
+    const timestamp = stringifyTo2Digits(currentDate.getHours()) + ':' +
+        stringifyTo2Digits(currentDate.getMinutes()) + ':' +
+        stringifyTo2Digits(currentDate.getSeconds());
     return timestamp;
+};
+
+export const info = (...params: any[]) => {
+    startTrace();
+    const indentedParams = [indent(callStackDepth), ...params];
+    winston.info.apply(winston, indentedParams);
 };
 
 const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
     return (...parameters: any[]) => {
         startTrace();
         try {
-            stackLevel++;
-            winston.info(getLogHeader(stackLevel) + functionExpression.name + logArguments(...parameters));
-            evaluateArguments(...parameters);
+            winston.info(indent(callStackDepth) + functionExpression.name + logArguments(...parameters));
+            callStackDepth++;
             const result: T = functionExpression.call(thisObject, ...parameters);
-            stackLevel--;
+            callStackDepth--;
             return result;
         }
         catch (error) {
             winston.error(error);
-            stackLevel--;
+            callStackDepth--;
             throw error;
         }
     };
 };
-    
+
+// TODO Refactor
 const logArguments = (...parameters: any[]) => {
     let stringifiedArguments = '(';
     let keysNumber = Object.keys(parameters).length;
@@ -89,16 +86,6 @@ const startTrace = () => {
             console.log('Trace end: ' + getTimestamp() + '-------------------------');
         });
     }
-};
-
-export const info = (message: string) => {
-    startTrace();
-    winston.info(getLogHeader(stackLevel) + message);
-};
-
-export const error = (message: string) => {
-    startTrace();
-    winston.error(getLogHeader(stackLevel) + message);
 };
 
 export default {
