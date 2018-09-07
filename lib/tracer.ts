@@ -5,10 +5,9 @@ import { ModenaConfig } from './types';
 let activeTrace = false;
 let callStackDepth = 0;
 
-export const error = (...params: any[]) => {
+export const error = (content: any) => {
     startTrace();
-    const indentedParams = [indent(callStackDepth), ...params];
-    winston.error.apply(winston, indentedParams);
+    winston.error(indent(callStackDepth), content);
 };
 
 const getTimestamp = () => {
@@ -19,10 +18,9 @@ const getTimestamp = () => {
     return timestamp;
 };
 
-export const info = (...params: any[]) => {
+export const info = (content: any) => {
     startTrace();
-    const indentedParams = [indent(callStackDepth), ...params];
-    winston.info.apply(winston, indentedParams);
+    winston.info(indent(callStackDepth), content);
 };
 
 const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
