@@ -45,5 +45,3 @@ export const discoverApps = (modenaConfig: ModenaConfig) => {
 
     return appsConfig;
 };
-
-export const tracedDiscoverApps = tracer.trace(discoverApps);

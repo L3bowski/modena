@@ -1,6 +1,6 @@
 import express from 'express';
 import { join } from 'path';
-import { tracedDiscoverApps } from './app-discovery';
+import { discoverApps } from './app-discovery';
 import { tracedRegisterApps } from './app-register';
 import { getAppResolverMiddleware } from './app-resolver';
 import { tracedConfigurePassport } from './passport';
@@ -59,7 +59,7 @@ export const runServer = (modenaConfig: ModenaConfig) => {
 
     tracedConfigurePassport(server);
 
-    const appsConfig = tracedDiscoverApps(modenaConfig);
+    const appsConfig = discoverApps(modenaConfig);
 
     extractAppsConfiguration(modenaConfig, appsConfig);
 
