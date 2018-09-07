@@ -6,7 +6,6 @@ import { getAppResolverMiddleware } from './app-resolver';
 import { tracedConfigurePassport } from './passport';
 import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
-import { configureWinston } from './winston-config';
 
 const defaultConfig = (modenaConfig: ModenaConfig) => {
     // When following line is executed, __dirname equals XXX/node_modules/modena/build
@@ -45,7 +44,7 @@ const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppCon
 export const runServer = (modenaConfig: ModenaConfig) => {
     defaultConfig(modenaConfig);
     overrideEnvironmentParameters(modenaConfig);
-    configureWinston(modenaConfig);
+    tracer.setUpTracer(modenaConfig);
 
     tracer.info('Starting modena with following configuration');
     // TODO Update after tracer simplification

@@ -1,5 +1,6 @@
 import winston from 'winston';
 import { indent, stringifyTo2Digits } from './format';
+import { ModenaConfig } from './types';
 
 let activeTrace = false;
 let callStackDepth = 0;
@@ -77,6 +78,18 @@ export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | str
     return tracedFunction;
 };
 
+export const setUpTracer = (modenaConfig: ModenaConfig) => {
+    if (modenaConfig.ENABLE_CONSOLE_LOGS === 'false') {
+        winston.remove(winston.transports.Console);    
+    }
+    
+    if (modenaConfig.LOG_FILENAME && modenaConfig.LOG_FILENAME.length > 0) {
+        winston.add(winston.transports.File, {
+            filename: modenaConfig.LOG_FILENAME
+        });
+    }
+};
+
 const startTrace = () => {
     if (!activeTrace) {
         console.log('Trace start: ' + getTimestamp() + '-------------------------');
@@ -91,5 +104,6 @@ const startTrace = () => {
 export default {
     error,
     info,
-    trace,
+    setUpTracer,
+    trace
 };
