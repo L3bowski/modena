@@ -1,12 +1,11 @@
 import express from 'express';
 import { join } from 'path';
 import { discoverApps } from './app-discovery';
-import { registerApps } from './app-register';
+import { tracedRegisterApps } from './app-register';
 import { getAppResolverMiddleware } from './app-resolver';
-import { configurePassport } from './passport';
+import { tracedConfigurePassport } from './passport';
 import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
-import { configureWinston } from './winston-config';
 
 const defaultConfig = (modenaConfig: ModenaConfig) => {
     // When following line is executed, __dirname equals XXX/node_modules/modena/build
@@ -18,7 +17,6 @@ const defaultConfig = (modenaConfig: ModenaConfig) => {
     modenaConfig.LOG_FILENAME = modenaConfig.LOG_FILENAME || 'logs.txt';
     modenaConfig.PORT = modenaConfig.PORT || 80;
     modenaConfig.SESSION_SECRET = modenaConfig.SESSION_SECRET || null;
-    modenaConfig.TRACER_LEVEL = modenaConfig.TRACER_LEVEL || 'error';
 };
 
 const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
@@ -44,12 +42,10 @@ const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppCon
 export const runServer = (modenaConfig: ModenaConfig) => {
     defaultConfig(modenaConfig);
     overrideEnvironmentParameters(modenaConfig);
-    configureWinston(modenaConfig);
-    tracer.setTraceLevel(modenaConfig.TRACER_LEVEL);
+    tracer.setUpTracer(modenaConfig);
 
     tracer.info('Starting modena with following configuration');
-    // TODO Update after tracer simplification
-    Object.keys(modenaConfig).forEach(key => console.log(key +':', modenaConfig[key]));
+    Object.keys(modenaConfig).forEach(key => tracer.info(key + ': ' + modenaConfig[key]));
 
     const server = express();
     
@@ -57,29 +53,25 @@ export const runServer = (modenaConfig: ModenaConfig) => {
     
     server.set('views', modenaConfig.APPS_FOLDER);
 
-    const tracedConfigurePassport = tracer.trace(configurePassport);
     tracedConfigurePassport(server);
 
-    const tracedDiscoverApps = tracer.trace(discoverApps);
-    const appsConfig = tracedDiscoverApps(modenaConfig);
+    const appsConfig = discoverApps(modenaConfig);
+
     extractAppsConfiguration(modenaConfig, appsConfig);
 
     if (modenaConfig.beforeRegisteringApps) {
         modenaConfig.beforeRegisteringApps(server, tracer, modenaConfig, appsConfig);
     }
 
-    const tracedAppResolverMiddleware = tracer.trace(getAppResolverMiddleware(modenaConfig, appsConfig));
-    server.use(tracedAppResolverMiddleware);
+    server.use(getAppResolverMiddleware(modenaConfig, appsConfig));
 
-    const tracedRegisterApps = tracer.trace(registerApps);
     tracedRegisterApps(server, modenaConfig, appsConfig)
     .then(() => {
         if (modenaConfig.afterRegisteringApps) {
             modenaConfig.afterRegisteringApps(server, tracer, modenaConfig, appsConfig);
         }
     
-        const tracedServerListen = tracer.trace('listen', server);
-        tracedServerListen(modenaConfig.PORT, function (error: any) {
+        server.listen(modenaConfig.PORT, function (error: any) {
             if (error) {
                 tracer.error(error);
             }

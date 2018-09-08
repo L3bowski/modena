@@ -1,33 +1,52 @@
 import winston from 'winston';
-import { digitPrepender } from './format';
+import { indent, stringifyTo2Digits } from './format';
+import { ModenaConfig } from './types';
 
-let traceLevel = 'log';
-let stackLevel = 0;
+let activeTrace = false;
+let callStackDepth = 0;
 
-const formatter = (value: number) => digitPrepender(value, 0, 2);
+export const error = (content: any) => {
+    startTrace();
+    winston.error(indent(callStackDepth), content);
+};
 
 const getTimestamp = () => {
     const currentDate = new Date();
-    const timestamp = formatter(
-        currentDate.getHours()) + ':' + formatter(currentDate.getMinutes()) + ':' +
-        formatter(currentDate.getSeconds());
+    const timestamp = stringifyTo2Digits(currentDate.getHours()) + ':' +
+        stringifyTo2Digits(currentDate.getMinutes()) + ':' +
+        stringifyTo2Digits(currentDate.getSeconds());
     return timestamp;
 };
 
-const evaluateArguments = (suppliedArguments: any) => {
-    for (const index in suppliedArguments) {
-        const argument = suppliedArguments[index];
-        if (typeof argument === 'undefined' || argument == null) {
-            winston.info('Parameter ' + index + ' is null or undefined...');
-        }
-    }
+export const info = (content: any) => {
+    startTrace();
+    winston.info(indent(callStackDepth), content);
 };
 
-const logArguments = (suppliedArguments: any) => {
+const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
+    return (...parameters: any[]) => {
+        startTrace();
+        try {
+            winston.info(indent(callStackDepth) + functionExpression.name + logArguments(...parameters));
+            callStackDepth++;
+            const result: T = functionExpression.call(thisObject, ...parameters);
+            callStackDepth--;
+            return result;
+        }
+        catch (error) {
+            winston.error(error);
+            callStackDepth--;
+            throw error;
+        }
+    };
+};
+
+// TODO Refactor
+const logArguments = (...parameters: any[]) => {
     let stringifiedArguments = '(';
-    let keysNumber = Object.keys(suppliedArguments).length;
-    for (const index in suppliedArguments) {
-        const argument = suppliedArguments[index];
+    let keysNumber = Object.keys(parameters).length;
+    for (const index in parameters) {
+        const argument = parameters[index];
         if (typeof argument === 'object') {
             stringifiedArguments += '{}';
         }
@@ -46,68 +65,43 @@ const logArguments = (suppliedArguments: any) => {
     return stringifiedArguments;
 };
 
-const getStackIndentation = (_stackLevel: number) => '\t'.repeat(_stackLevel);
-
-const getLogHeader = (_stackLevel: number) => getTimestamp() + getStackIndentation(_stackLevel) + ' ';
-
-const tracers: any = {
-    error: (functionExpression: Function, thisObject: any) => {
-        return function() {
-            try {
-                return functionExpression.apply(thisObject, arguments);
-            }
-            catch (error) {
-                winston.error(functionExpression.name + logArguments(arguments));
-                winston.error(error);
-                throw error;
-            }
-        };
-    },
-    log: (functionExpression: Function, thisObject: any) => {
-        return function() {
-            try {
-                stackLevel++;
-                winston.info(getLogHeader(stackLevel) + functionExpression.name + logArguments(arguments));
-                evaluateArguments(arguments);
-                const result = functionExpression.apply(thisObject, arguments);
-                stackLevel--;
-                return result;
-            }
-            catch (error) {
-                winston.error(error);
-                stackLevel--;
-                throw error;
-            }
-        };
-    }
-};
-
-export const trace = (functionExpression: Function | string, thisObject?: any) => {
-    let tracedFunction;
-
-    if (thisObject == null) {
-        tracedFunction = tracers[traceLevel](functionExpression, null);
+export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | string, thisObject?: any) => {
+    let tracedFunction: (...parameters: any[]) => T;
+    if (typeof functionExpression === 'function') {
+        tracedFunction = log(functionExpression, null);
     }
     else {
-        tracedFunction = tracers[traceLevel](thisObject[functionExpression as string], thisObject);
+        tracedFunction = log(thisObject[functionExpression], thisObject);
     }
-
     return tracedFunction;
 };
 
-export const setTraceLevel = (level: string) => traceLevel = level;
-
-export const info = (message: string) => {
-    winston.info(getLogHeader(stackLevel) + message);
+export const setUpTracer = (modenaConfig: ModenaConfig) => {
+    if (modenaConfig.ENABLE_CONSOLE_LOGS === 'false') {
+        winston.remove(winston.transports.Console);    
+    }
+    
+    if (modenaConfig.LOG_FILENAME && modenaConfig.LOG_FILENAME.length > 0) {
+        winston.add(winston.transports.File, {
+            filename: modenaConfig.LOG_FILENAME
+        });
+    }
 };
 
-export const error = (message: string) => {
-    winston.error(getLogHeader(stackLevel) + message);
+const startTrace = () => {
+    if (!activeTrace) {
+        console.log('Trace start: ' + getTimestamp() + '-------------------------');
+        activeTrace = true;
+        setImmediate(() => {
+            activeTrace = false;
+            console.log('Trace end: ' + getTimestamp() + '-------------------------');
+        });
+    }
 };
 
 export default {
     error,
     info,
-    trace,
-    setTraceLevel
+    setUpTracer,
+    trace
 };

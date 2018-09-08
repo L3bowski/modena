@@ -26,7 +26,6 @@ export interface ModenaConfig {
     LOG_FILENAME: any;
     PORT: any;
     SESSION_SECRET?: string;
-    TRACER_LEVEL: any;
     afterRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     beforeRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     [key: string]: any;

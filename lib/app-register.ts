@@ -42,12 +42,12 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
 
     if (appConfig.modenaSetupPath != null) {
         const { configureRouter } = require(appConfig.modenaSetupPath);
-        const tracedConfigureRoute = tracer.trace(configureRouter);
+        const tracedConfigureRoute = tracer.trace(configureRouter as () => Handler);
 
         routerPromise = new Promise((resolve, reject) => {
             try
             {
-                const appRouter: Handler = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
+                const appRouter = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
                 resolve(appRouter);
             }
             catch(error)
@@ -77,3 +77,5 @@ export const registerApps = (server: express.Application, modenaConfig: ModenaCo
     const registerPromises = appsConfig.map(appConfig => tracedRegisterApp(server, modenaConfig, appConfig));
     return Promise.all(registerPromises);
 };
+
+export const tracedRegisterApps = tracer.trace(registerApps);

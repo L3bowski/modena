@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { info } from './tracer';
+import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
 
 const isolateViewsAccess = (namespace: string, res: any) => {
@@ -88,5 +89,5 @@ export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig:
 
         return next();
     };
-    return appResolverMiddleware;
+    return tracer.trace(appResolverMiddleware);
 };
