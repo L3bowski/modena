@@ -59,8 +59,8 @@ export const getAccessedAppConfig = (
             // 3) Match by app name (e.g: http://localhost/app-name)
             accessedApp = appsConfig.find(appConfig => {
                 const regexBase = '\\/' + appConfig.name + '(\\/|\\?|$)';
-                const regex = new RegExp(regexBase, 'g');
-                return urlPathname.match(regex) ? true : false;
+                const regex = new RegExp(regexBase);
+                return regex.test(urlPathname);
             });
         }
     }

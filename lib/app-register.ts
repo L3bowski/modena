@@ -10,7 +10,8 @@ import tracer from './tracer';
 import { AppConfig, AppMiddleware, AppUtils, ModenaConfig } from './types';
 
 const registerApp = (server: express.Application, modenaConfig: ModenaConfig, appConfig: AppConfig) => {
-    tracer.info('App name: ' + appConfig.name);
+    tracer.info(`Registering app ${appConfig.name} with following configuration`);
+    Object.keys(appConfig).forEach(key => tracer.info(key + ': ' + appConfig[key]));
 
     const jsonMiddleware = bodyParser.json();
     const sessionMiddleware = session({
