@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { join } from 'path';
-import { defaultConfig } from './configuration';
+import { defaultConfig, overrideEnvironmentParameters } from './configuration';
 import { ModenaConfig } from './types';
 
 describe('Configuration', () => {
@@ -10,7 +10,7 @@ describe('Configuration', () => {
         let configParameters: any;
         let modenaConfig: ModenaConfig;
 
-        it('should use default values if no parameters are provided', () => {
+        it('should use default values if no parameters provided', () => {
             configParameters = {};
             modenaConfig = defaultConfig(configParameters);
 
@@ -24,7 +24,7 @@ describe('Configuration', () => {
             expect(modenaConfig.SESSION_SECRET).to.equal(null);            
         });
 
-        it('should use configuration parameters if they are provided', () => {
+        it('should use configuration parameters if provided', () => {
             configParameters = {
                 afterRegisteringApps: () => {},
                 APPS_FOLDER: 'test-apps-folder-path',
@@ -49,7 +49,52 @@ describe('Configuration', () => {
     });
 
     describe('environment variables', () => {
+        const originalEnv: any = process.env;
+        let existingModenaConfig: ModenaConfig;
 
+        afterEach(() => {
+            process.env = originalEnv;
+        });
+
+        it('should override the existing modena configuration if provided', () => {
+            existingModenaConfig = {};
+            process.env = {
+                APPS_FOLDER: 'test-apps-folder-path',
+                DEFAULT_APP: 'default-app',
+                ENABLE_CONSOLE_LOGS: 'true',
+                LOG_FILENAME: 'test.log',
+                PORT: '3000',
+                SESSION_SECRET: 'dont tell anyone'
+            };
+            const modenaConfig = overrideEnvironmentParameters(existingModenaConfig);
+
+            expect(modenaConfig.APPS_FOLDER).to.equal(process.env.APPS_FOLDER);
+            expect(modenaConfig.DEFAULT_APP).to.equal(process.env.DEFAULT_APP);
+            expect(modenaConfig.ENABLE_CONSOLE_LOGS).to.equal(process.env.ENABLE_CONSOLE_LOGS);
+            expect(modenaConfig.LOG_FILENAME).to.equal(process.env.LOG_FILENAME);
+            expect(modenaConfig.PORT).to.equal(process.env.PORT);
+            expect(modenaConfig.SESSION_SECRET).to.equal(process.env.SESSION_SECRET);   
+        });
+
+        it('should use existing modena configuration if no environment variables provided', () => {
+            existingModenaConfig = {
+                APPS_FOLDER: 'test-apps-folder-path',
+                DEFAULT_APP: 'default-app',
+                ENABLE_CONSOLE_LOGS: 'true',
+                LOG_FILENAME: 'test.log',
+                PORT: '3000',
+                SESSION_SECRET: 'dont tell anyone'
+            };
+            process.env = {};
+            const modenaConfig = overrideEnvironmentParameters(existingModenaConfig);
+
+            expect(modenaConfig.APPS_FOLDER).to.equal(existingModenaConfig.APPS_FOLDER);
+            expect(modenaConfig.DEFAULT_APP).to.equal(existingModenaConfig.DEFAULT_APP);
+            expect(modenaConfig.ENABLE_CONSOLE_LOGS).to.equal(existingModenaConfig.ENABLE_CONSOLE_LOGS);
+            expect(modenaConfig.LOG_FILENAME).to.equal(existingModenaConfig.LOG_FILENAME);
+            expect(modenaConfig.PORT).to.equal(existingModenaConfig.PORT);
+            expect(modenaConfig.SESSION_SECRET).to.equal(existingModenaConfig.SESSION_SECRET);   
+        });
     });
 
     describe('apps configuration', () => {

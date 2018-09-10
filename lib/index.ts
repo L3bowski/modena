@@ -9,7 +9,7 @@ import { ModenaConfig } from './types';
 
 export const runServer = (modenaConfig: ModenaConfig) => {
     modenaConfig = defaultConfig(modenaConfig);
-    overrideEnvironmentParameters(modenaConfig);
+    modenaConfig = overrideEnvironmentParameters(modenaConfig);
     tracer.setUpTracer(modenaConfig);
 
     tracer.info('Starting modena with following configuration');

@@ -17,7 +17,9 @@ export const defaultConfig = (configParameters: any): ModenaConfig => {
 };
 
 export const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
-    Object.keys(process.env).forEach(key => modenaConfig[key] = process.env[key]);
+    const overrideModenaConfig = { ...modenaConfig };
+    Object.keys(process.env).forEach(key => overrideModenaConfig[key] = process.env[key]);
+    return overrideModenaConfig;
 };
 
 export const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
