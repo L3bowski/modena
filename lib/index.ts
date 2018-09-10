@@ -8,7 +8,7 @@ import tracer from './tracer';
 import { ModenaConfig } from './types';
 
 export const runServer = (modenaConfig: ModenaConfig) => {
-    defaultConfig(modenaConfig);
+    modenaConfig = defaultConfig(modenaConfig);
     overrideEnvironmentParameters(modenaConfig);
     tracer.setUpTracer(modenaConfig);
 

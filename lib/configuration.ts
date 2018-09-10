@@ -1,16 +1,19 @@
 import { join } from 'path';
 import { AppConfig, ModenaConfig } from './types';
 
-export const defaultConfig = (modenaConfig: ModenaConfig) => {
+export const defaultConfig = (configParameters: any): ModenaConfig => {
     // When following line is executed, __dirname equals XXX/node_modules/modena/build
-    modenaConfig.afterRegisteringApps = modenaConfig.afterRegisteringApps || null;
-    modenaConfig.APPS_FOLDER = modenaConfig.APPS_FOLDER || join(__dirname, '..', '..', '..', 'apps');
-    modenaConfig.beforeRegisteringApps = modenaConfig.beforeRegisteringApps || null;
-    modenaConfig.DEFAULT_APP = modenaConfig.DEFAULT_APP || null;
-    modenaConfig.ENABLE_CONSOLE_LOGS = modenaConfig.ENABLE_CONSOLE_LOGS || 'false';
-    modenaConfig.LOG_FILENAME = modenaConfig.LOG_FILENAME || 'logs.txt';
-    modenaConfig.PORT = modenaConfig.PORT || 80;
-    modenaConfig.SESSION_SECRET = modenaConfig.SESSION_SECRET || null;
+    const modenaConfig: ModenaConfig = {
+        afterRegisteringApps: configParameters.afterRegisteringApps || null,
+        APPS_FOLDER: configParameters.APPS_FOLDER || join(__dirname, '..', '..', '..', 'apps'),
+        beforeRegisteringApps: configParameters.beforeRegisteringApps || null,
+        DEFAULT_APP: configParameters.DEFAULT_APP || null,
+        ENABLE_CONSOLE_LOGS: configParameters.ENABLE_CONSOLE_LOGS || 'false',
+        LOG_FILENAME: configParameters.LOG_FILENAME || 'logs.txt',
+        PORT: configParameters.PORT || 80,
+        SESSION_SECRET: configParameters.SESSION_SECRET || null
+    };
+    return modenaConfig;
 };
 
 export const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
