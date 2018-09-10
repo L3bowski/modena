@@ -151,6 +151,17 @@ describe('App resolver', () => {
             `/${hostnameAppConfig1.name}`);
     });
 
+    describe('Access through app name when exposed as public domain and path traversal enabled', () => {
+        testSuffixedUrlsResolution(
+            publicDomainWithTraversal,
+            `/${hostnameAppConfig1.name}`,
+            {},
+            appsConfig,
+            defaultAppConfig.name,
+            hostnameAppConfig1,
+            `/${hostnameAppConfig1.name}`);
+    });
+
     describe('Access through public domain when path traversal disabled', () => {
         testSuffixedUrlsResolution(
             publicDomain,

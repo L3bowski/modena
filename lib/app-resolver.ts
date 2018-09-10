@@ -47,21 +47,24 @@ export const getAccessedAppConfig = (
     // (e.g. app1 is exposed at http://domain.com along with http://domain.com/app1-endpoint, but still
     // http://domain.com/app2 and http://domain.com?$modena=app2 are accessible).
     // In that case (allowNamespaceTraversal), the actual accessedApp might be a another one
-
     if (!accessedApp || accessedApp.allowNamespaceTraversal) {
 
         // 2) Match by query string parameters (e.g: http://localhost?$modena=app-name)
+        let queryStringMatchingApp: AppConfig;
         if (queryParameters.$modena) {
-            accessedApp = appsConfig.find(appConfig => appConfig.name === queryParameters.$modena);
+            queryStringMatchingApp = appsConfig.find(appConfig => appConfig.name === queryParameters.$modena);
+            accessedApp = queryStringMatchingApp || accessedApp;
         }
 
-        if (!accessedApp) {
-            // 3) Match by app name (e.g: http://localhost/app-name)
-            accessedApp = appsConfig.find(appConfig => {
+        // 3) Match by app name (e.g: http://localhost/app-name)
+        let appNameMatchingName: AppConfig;
+        if (!queryStringMatchingApp) {
+            appNameMatchingName = appsConfig.find(appConfig => {
                 const regexBase = '\\/' + appConfig.name + '(\\/|\\?|$)';
                 const regex = new RegExp(regexBase);
                 return regex.test(urlPathname);
             });
+            accessedApp = appNameMatchingName || accessedApp;
         }
     }
 
