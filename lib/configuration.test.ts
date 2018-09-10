@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { join } from 'path';
-import { defaultConfig, overrideEnvironmentParameters } from './configuration';
-import { ModenaConfig } from './types';
+import { defaultConfig, extractAppsConfiguration, overrideEnvironmentParameters } from './configuration';
+import { AppConfig, ModenaConfig } from './types';
 
 describe('Configuration', () => {
 
-    describe('default config', () => {
+    describe('Default config', () => {
         let configParameters: any;
         let modenaConfig: ModenaConfig;
 
@@ -48,7 +48,7 @@ describe('Configuration', () => {
         });
     });
 
-    describe('environment variables', () => {
+    describe('Environment variables', () => {
         const originalEnv: any = process.env;
         let existingModenaConfig: ModenaConfig;
 
@@ -97,7 +97,33 @@ describe('Configuration', () => {
         });
     });
 
-    describe('apps configuration', () => {
+    describe('Apps configuration', () => {
+        let modenaConfig: ModenaConfig;
+        let appsConfig: AppConfig[];
 
+        it('should be moved from modena configuration to the corresponding app configuration', () => {
+            const firstApp: AppConfig = {
+                name: 'first-app',
+                assetsFolder: 'not-used',
+                path: 'not-used'
+            };
+            const secondApp: AppConfig = {
+                name: 'first-app',
+                assetsFolder: 'not-used',
+                path: 'not-used'
+            };
+            appsConfig = [firstApp, secondApp];
+            const appPropertyName = 'app-property';
+            const appPropertyValue = 'what-ever';
+            modenaConfig = {
+                [firstApp.name + '_' + appPropertyName]: appPropertyValue
+            };
+
+            extractAppsConfiguration(modenaConfig, appsConfig);
+
+            expect(modenaConfig[appPropertyName]).to.equal(undefined);
+            expect(firstApp[appPropertyName]).to.equal(appPropertyValue);
+            expect(secondApp[appPropertyName]).to.equal(undefined);
+        });
     });
 });
