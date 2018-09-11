@@ -81,10 +81,11 @@ export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig:
 
         const accessedApp = getAccessedAppConfig(req.headers.host, req.url, req.query, appsConfig, modenaConfig.DEFAULT_APP);
         if (accessedApp) {
-            info('Accessed app: ' + accessedApp.name);
             req._namespace = accessedApp.name;
             req.url = updateUrlPathname(accessedApp.name, req.url);
             isolateViewsAccess(accessedApp.name, res);
+            info('Accessed app: ' + accessedApp.name);
+            info('Updated url pathname: ' + req.url);
         }
         else {
             info('Could not resolve the url to any of the existing apps...');
