@@ -4,6 +4,7 @@ import { AppConfig, ModenaConfig } from './types';
 export const defaultConfig = (configParameters: any): ModenaConfig => {
     // When following line is executed, __dirname equals XXX/node_modules/modena/build
     const modenaConfig: ModenaConfig = {
+        ...configParameters,
         afterRegisteringApps: configParameters.afterRegisteringApps || null,
         APPS_FOLDER: configParameters.APPS_FOLDER || join(__dirname, '..', '..', '..', 'apps'),
         beforeRegisteringApps: configParameters.beforeRegisteringApps || null,
@@ -24,16 +25,13 @@ export const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
 
 export const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
     appsConfig.forEach(appConfig => {
-        const appPropertiesKey = [];
-        for (const key in modenaConfig) {
-            if (key.startsWith(appConfig.name)) {
-                appPropertiesKey.push(key);
+        const appPrefix = appConfig.name.toUpperCase().replace(/-/g, '_') + '__';
+        Object.keys(modenaConfig).forEach(key => {
+            if (key.startsWith(appPrefix)) {
+                const appPropertyName = key.replace(appPrefix, '');
+                appConfig[appPropertyName] = modenaConfig[key];
+                delete modenaConfig[key];
             }
-        }
-        appPropertiesKey.forEach(key => {
-            const appKey = key.replace(appConfig.name + '_', '');
-            appConfig[appKey] = modenaConfig[key];
-            delete modenaConfig[key];
         });
     });
 };

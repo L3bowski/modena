@@ -108,20 +108,21 @@ describe('Configuration', () => {
                 path: 'not-used'
             };
             const secondApp: AppConfig = {
-                name: 'first-app',
+                name: 'second-app',
                 assetsFolder: 'not-used',
                 path: 'not-used'
             };
             appsConfig = [firstApp, secondApp];
-            const appPropertyName = 'app-property';
+            const appPropertyName = 'ENVIRONMENT_VARIABLE_NAME';
             const appPropertyValue = 'what-ever';
+            const globalConfigAppPrefix = 'FIRST_APP__' + appPropertyName;
             modenaConfig = {
-                [firstApp.name + '_' + appPropertyName]: appPropertyValue
+                [globalConfigAppPrefix]: appPropertyValue
             };
 
             extractAppsConfiguration(modenaConfig, appsConfig);
 
-            expect(modenaConfig[appPropertyName]).to.equal(undefined);
+            expect(modenaConfig[globalConfigAppPrefix]).to.equal(undefined);
             expect(firstApp[appPropertyName]).to.equal(appPropertyValue);
             expect(secondApp[appPropertyName]).to.equal(undefined);
         });
