@@ -41,28 +41,23 @@ const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any
     };
 };
 
-// TODO Refactor
-const logArguments = (...parameters: any[]) => {
-    let stringifiedArguments = '(';
-    let keysNumber = Object.keys(parameters).length;
-    for (const index in parameters) {
-        const argument = parameters[index];
-        if (typeof argument === 'object') {
-            stringifiedArguments += '{}';
+export const logArguments = (...parameters: any[]) => {
+    const stringifiedArguments = Object.keys(parameters).map(key => {
+        const argument = parameters[key as any];
+        let stringifiedArgument = argument + '';
+        if (argument instanceof Array) {
+            stringifiedArgument = '[...]';
         }
-        else if (typeof argument === 'function') {
-            stringifiedArguments += argument.name + '()';
+        else if (argument instanceof Function) {
+            stringifiedArgument = (argument.name || 'anonymous_function') + '(...)';
         }
-        else {
-            stringifiedArguments += argument;
+        else if (argument instanceof Object) {
+            stringifiedArgument = '{...}';
         }
-        keysNumber--;
-        if (keysNumber > 0) {
-            stringifiedArguments += ', ';
-        }
-    }
-    stringifiedArguments += ')';
-    return stringifiedArguments;
+        return stringifiedArgument;
+    })
+    .join(', ');
+    return `(${stringifiedArguments})`;
 };
 
 export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | string, thisObject?: any) => {

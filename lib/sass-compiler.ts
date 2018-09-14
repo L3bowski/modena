@@ -39,7 +39,7 @@ const compileSassFiles = (inputDirectory: string, outputDirectory: string) => {
     });
 };
 
-export const compileAppSass = (appConfig: AppConfig) => {
+export const compileAppSass = function _compileAppSass(appConfig: AppConfig) {
     const inputDirectory = join(appConfig.path, 'sass');
     const assetsDirectory = join(appConfig.path, appConfig.assetsFolder);
     const outputDirectory = join(assetsDirectory, 'css');
