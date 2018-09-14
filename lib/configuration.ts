@@ -1,7 +1,8 @@
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { AppConfig, ModenaConfig } from './types';
 
-export const defaultConfig = (configParameters: any): ModenaConfig => {
+export const defaultConfig = (configParameters: ModenaConfig): ModenaConfig => {
     // When following line is executed, __dirname equals XXX/node_modules/modena/build
     const modenaConfig: ModenaConfig = {
         ...configParameters,
@@ -9,18 +10,12 @@ export const defaultConfig = (configParameters: any): ModenaConfig => {
         APPS_FOLDER: configParameters.APPS_FOLDER || join(__dirname, '..', '..', '..', 'apps'),
         beforeRegisteringApps: configParameters.beforeRegisteringApps || null,
         DEFAULT_APP: configParameters.DEFAULT_APP || null,
-        ENABLE_CONSOLE_LOGS: configParameters.ENABLE_CONSOLE_LOGS || 'false',
+        ENABLE_CONSOLE_LOGS: configParameters.ENABLE_CONSOLE_LOGS || 'true',
         LOG_FILENAME: configParameters.LOG_FILENAME || 'logs.txt',
         PORT: configParameters.PORT || 80,
         SESSION_SECRET: configParameters.SESSION_SECRET || null
     };
     return modenaConfig;
-};
-
-export const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
-    const overrideModenaConfig = { ...modenaConfig };
-    Object.keys(process.env).forEach(key => overrideModenaConfig[key] = process.env[key]);
-    return overrideModenaConfig;
 };
 
 export const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
@@ -34,4 +29,21 @@ export const extractAppsConfiguration = (modenaConfig: ModenaConfig, appsConfig:
             }
         });
     });
+};
+
+export const overrideEnvironmentParameters = (modenaConfig: ModenaConfig) => {
+    const overrideModenaConfig = { ...modenaConfig };
+    Object.keys(process.env).forEach(key => overrideModenaConfig[key] = process.env[key]);
+    return overrideModenaConfig;
+};
+
+export const readConfigFile = (filepath: string): ModenaConfig => {
+    let modenaConfig: ModenaConfig = {};
+    if (existsSync(filepath)) {
+        modenaConfig = require(filepath);
+    }
+    else {
+        console.error('No configuration file was found at' + filepath);
+    }
+    return modenaConfig;
 };
