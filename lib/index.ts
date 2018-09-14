@@ -10,7 +10,7 @@ import { ModenaConfig } from './types';
 export const runServer = (configuration?: ModenaConfig | string) => {
     let modenaConfig: ModenaConfig = {};
     if (typeof configuration === 'string') {
-        readConfigFile(configuration);
+        modenaConfig = defaultConfig(readConfigFile(configuration));
     } else {
         modenaConfig = defaultConfig(configuration || {});
     }
