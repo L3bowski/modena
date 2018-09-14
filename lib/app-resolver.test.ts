@@ -3,12 +3,6 @@ import { describe, it } from 'mocha';
 import { getAccessedAppConfig, updateUrlPathname } from '../lib/app-resolver';
 import { AppConfig } from '../lib/types';
 
-// TODO Test http://poliester/app2 should be resolving to app1 if no traversal
-
-// TODO Test http://capellas/app2 should be resolving to app2 if traversal
-
-// TODO Test http://local/app1?$modena=app2 should be resolving to app2
-
 const serializeQueryParameters = (queryParameters: any) => queryParameters.$modena ?
     `?$modena=${queryParameters.$modena}` : ``;
 
@@ -160,6 +154,17 @@ describe('App resolver', () => {
             defaultAppConfig.name,
             hostnameAppConfig1,
             `/${hostnameAppConfig1.name}`);
+    });
+
+    describe('Not access through app name when exposed as public domain and path traversal disabled', () => {
+        testSuffixedUrlsResolution(
+            publicDomain,
+            `/${hostnameAppConfig1.name}`,
+            {},
+            appsConfig,
+            defaultAppConfig.name,
+            publicDomainAppConfig,
+            `/${publicDomainAppConfig.name}/${hostnameAppConfig1.name}`);
     });
 
     describe('Access through public domain when path traversal disabled', () => {
