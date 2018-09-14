@@ -27,7 +27,7 @@ const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any
     return (...parameters: any[]) => {
         startTrace();
         try {
-            winston.info(indent(callStackDepth) + functionExpression.name + logArguments(...parameters));
+            winston.info(indent(callStackDepth) + (functionExpression.name || 'anonymous_function') + logArguments(...parameters));
             callStackDepth++;
             const result: T = functionExpression.call(thisObject, ...parameters);
             callStackDepth--;
@@ -49,7 +49,7 @@ export const logArguments = (...parameters: any[]) => {
             stringifiedArgument = '[...]';
         }
         else if (argument instanceof Function) {
-            stringifiedArgument = (argument.name || 'anonymous_function') + '(...)';
+            stringifiedArgument = '() => {}';
         }
         else if (argument instanceof Object) {
             stringifiedArgument = '{...}';
