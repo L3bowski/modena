@@ -2,13 +2,18 @@ import express from 'express';
 import { discoverApps } from './app-discovery';
 import { tracedRegisterApps } from './app-register';
 import { getAppResolverMiddleware } from './app-resolver';
-import {defaultConfig, extractAppsConfiguration, overrideEnvironmentParameters} from './configuration';
+import {defaultConfig, extractAppsConfiguration, overrideEnvironmentParameters, readConfigFile} from './configuration';
 import { tracedConfigurePassport } from './passport';
 import tracer from './tracer';
 import { ModenaConfig } from './types';
 
-export const runServer = (modenaConfig: ModenaConfig) => {
-    modenaConfig = defaultConfig(modenaConfig);
+export const runServer = (configuration?: ModenaConfig | string) => {
+    let modenaConfig: ModenaConfig = {};
+    if (typeof configuration === 'string') {
+        modenaConfig = defaultConfig(readConfigFile(configuration));
+    } else {
+        modenaConfig = defaultConfig(configuration || {});
+    }
     modenaConfig = overrideEnvironmentParameters(modenaConfig);
     tracer.setUpTracer(modenaConfig);
 
@@ -50,12 +55,14 @@ export const runServer = (modenaConfig: ModenaConfig) => {
 
 export default {
     express,
+    readConfigFile,
     runServer,
-    tracer
+    tracer,
 };
 
 module.exports = {
     express,
+    readConfigFile,
     runServer,
     tracer
 };
