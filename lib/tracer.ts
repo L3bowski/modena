@@ -15,7 +15,7 @@ export const info = (content: any) => {
     winston.info(indent(callStackDepth), content);
 };
 
-const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
+export const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
     return (...parameters: any[]) => {
         startTrace();
         try {

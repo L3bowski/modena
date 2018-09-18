@@ -185,4 +185,21 @@ describe('Tracer', () => {
             winstonSpy.restore();
         });
     });
+
+    describe('Trace', () => {
+        it('should call tracer.log with null "this" when invoked with a function', () => {
+            const functionExpression = () => {};
+            const logSpy = sinon.spy(tracer, 'log');
+            tracer.trace(functionExpression);
+            expect(logSpy).to.have.been.calledWith(functionExpression, null);
+            logSpy.restore();
+        });
+
+        it('should call tracer.log with corresponding "this" when invoked with a function', () => {
+            const logSpy = sinon.spy(tracer, 'log');
+            tracer.trace('log', console);
+            expect(logSpy).to.have.been.calledWith(console.log, console);
+            logSpy.restore();
+        });
+    });
 });
