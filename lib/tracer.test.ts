@@ -34,10 +34,41 @@ const disableLogs = (callback: Function, done: MochaDone) => {
 describe('Tracer', () => {
     const message = 'Log message';
 
+    describe('Error', () => {
+        it('should start trace', done => {
+            disableLogs(() => {
+                const startTraceSpy = sinon.spy(tracer, 'startTrace');
+                tracer.error(message);    
+                expect(startTraceSpy).to.have.been.calledOnce;
+                startTraceSpy.restore();
+            }, done);
+        });
+    
+        it('should log error through winston', done => {
+            disableLogs(() => {
+                const winstonErrorSpy = sinon.spy(winston, 'error');
+                const winstonInfoSpy = sinon.spy(winston, 'info');
+                tracer.error(message);
+                expect(winstonErrorSpy).to.have.been.calledOnceWith('', message);
+                expect(winstonInfoSpy).not.to.have.been.called;
+                winstonErrorSpy.restore();
+                winstonInfoSpy.restore();
+            }, done);
+        });
+
+        it('should log error with indentation through winston when called from traced function', done => {
+            disableLogs(() => {
+                const winstonErrorSpy = sinon.spy(winston, 'error');
+                tracer.trace(() => tracer.error(message))();
+                expect(winstonErrorSpy).to.have.been.calledOnceWith('    ', message);
+                winstonErrorSpy.restore();
+            }, done);
+        });
+    });
+
     describe('Info', () => {
         it('should start trace', done => {
             disableLogs(() => {
-                winston.info('Wtf -------------------------');
                 const startTraceSpy = sinon.spy(tracer, 'startTrace');
                 tracer.info(message);
                 expect(startTraceSpy).to.have.been.calledOnce;
@@ -45,7 +76,7 @@ describe('Tracer', () => {
             }, done);
         });
     
-        it('should call winston.info', done => {
+        it('should log message through winston', done => {
             disableLogs(() => {
                 const winstonErrorSpy = sinon.spy(winston, 'error');
                 const winstonInfoSpy = sinon.spy(winston, 'info');
@@ -57,7 +88,7 @@ describe('Tracer', () => {
             }, done);
         });
 
-        it('should call winston.info with indentation when called from traced function', done => {
+        it('should log message with indentation through winston when called from traced function', done => {
             disableLogs(() => {
                 const winstonInfoSpy = sinon.spy(winston, 'info');
                 tracer.trace(() => tracer.info(message))();
@@ -71,76 +102,62 @@ describe('Tracer', () => {
         });
     });
 
-    describe('Error', () => {
+    describe('Instrument function execution', () => {
         it('should start trace', done => {
             disableLogs(() => {
+                const functionExpression = () => {};
                 const startTraceSpy = sinon.spy(tracer, 'startTrace');
-                tracer.error(message);    
+                tracer.instrumentFunctionExecution(functionExpression, null)();
                 expect(startTraceSpy).to.have.been.calledOnce;
                 startTraceSpy.restore();
             }, done);
         });
-    
-        it('should call winston.error', done => {
+
+        it('should stringify arguments', done => {
             disableLogs(() => {
-                const winstonErrorSpy = sinon.spy(winston, 'error');
-                const winstonInfoSpy = sinon.spy(winston, 'info');
-                tracer.error(message);
-                expect(winstonErrorSpy).to.have.been.calledOnceWith('', message);
-                expect(winstonInfoSpy).not.to.have.been.called;
-                winstonErrorSpy.restore();
-                winstonInfoSpy.restore();
+                const functionExpression = () => {};
+                const stringifyArgumentsSpy = sinon.spy(tracer, 'stringifyArguments');
+                tracer.instrumentFunctionExecution(functionExpression, null)(3);
+                expect(stringifyArgumentsSpy).to.have.been.calledOnceWith(3);
+                stringifyArgumentsSpy.restore();
             }, done);
         });
 
-        it('should call winston.error with indentation when called from traced function', done => {
+        it('should log function execution through winston', done => {
             disableLogs(() => {
-                const winstonErrorSpy = sinon.spy(winston, 'error');
-                tracer.trace(() => tracer.error(message))();
-                expect(winstonErrorSpy).to.have.been.calledOnceWith('    ', message);
-                winstonErrorSpy.restore();
-            }, done);
-        });
-    });
-
-    describe('Start Trace', () => {
-        it('should console.log trace start if no active trace', done => {
-            disableLogs(() => {
-                const consoleSpy = sinon.spy(console, 'log');
-                tracer.startTrace();
-                expect(consoleSpy).to.have.been.called;
-                const message = consoleSpy.getCall(0).args[0];
-                expect(message).to.contain('Trace start');
-                consoleSpy.restore();
+                const functionExpression = () => {};
+                const winstonSpy = sinon.spy(winston, 'info');
+                tracer.instrumentFunctionExecution(functionExpression, null)();
+                expect(winstonSpy).to.have.been.calledOnce;
+                winstonSpy.restore();
             }, done);
         });
 
-        it('should not console.log trace start if active trace', done => {
+        it('should execute the provided function with corresponding parameters', done => {
             disableLogs(() => {
-                const consoleSpy = sinon.spy(console, 'log');
-                tracer.startTrace();
-                tracer.startTrace();
-                expect(consoleSpy).to.have.been.calledOnce;
-                consoleSpy.restore();
+                const providedArgument = 3;
+                const spy = sinon.spy();
+                tracer.instrumentFunctionExecution(spy, null)(providedArgument);
+                expect(spy).to.have.been.calledWith(providedArgument);
             }, done);
         });
 
-        it('should set and immediate to console.log trace end', done => {
+        it('should log exceptions raised during function execution', done => {
             disableLogs(() => {
-                tracer.startTrace();
-                const consoleSpy = sinon.spy(console, 'log');
-                expect(consoleSpy).to.not.have.been.called;
-                setImmediate(() => {
-                    expect(consoleSpy).to.have.been.calledOnce;
-                    const message = consoleSpy.getCall(0).args[0];
-                    expect(message).to.contain('Trace end');
-                    consoleSpy.restore();
-                });
+                const error = Error('New exception');
+                const functionExpression = () => { throw error; };
+                const winstonSpy = sinon.spy(winston, 'error');
+                try {
+                    tracer.instrumentFunctionExecution(functionExpression, null)();
+                }
+                catch(error) {
+                }
+                expect(winstonSpy).to.have.been.calledOnceWith(error);
             }, done);
         });
     });
 
-    describe('Setup Tracer', () => {
+    describe('Setup tracer', () => {
         it('should remove console logs if ENABLE_CONSOLE_LOGS set to false', () => {
             const modenaConfig: ModenaConfig = {
                 ENABLE_CONSOLE_LOGS: 'false'
@@ -186,42 +203,83 @@ describe('Tracer', () => {
         });
     });
 
-    describe('Trace', () => {
-        it('should call tracer.log with null "this" when invoked with a function', () => {
-            const functionExpression = () => {};
-            const logSpy = sinon.spy(tracer, 'log');
-            tracer.trace(functionExpression);
-            expect(logSpy).to.have.been.calledWith(functionExpression, null);
-            logSpy.restore();
+    describe('Stringify arguments', () => {
+        it('Transform value parameters to their value', () => {
+            const valueParameters = tracer.stringifyArguments('text', 100, true, null, undefined, typeof 3);
+            expect(valueParameters).to.equal('(text, 100, true, null, undefined, number)');
         });
-
-        it('should call tracer.log with corresponding "this" when invoked with a function', () => {
-            const logSpy = sinon.spy(tracer, 'log');
-            tracer.trace('log', console);
-            expect(logSpy).to.have.been.calledWith(console.log, console);
-            logSpy.restore();
+        it('Transform function parameters to "() => {}"', () => {
+            const functionExpression = (parameter: number) => parameter^2;
+            const functionParameter = tracer.stringifyArguments(functionExpression, functionExpression);
+            expect(functionParameter).to.equal('(() => {}, () => {})');
+        });
+        it('Transform array parameters to "[...]"', () => {
+            const simpleArray = [1,2,3,4];
+            const complexArray = [simpleArray];
+            const functionParameter = tracer.stringifyArguments(simpleArray, complexArray);
+            expect(functionParameter).to.equal('([...], [...])');
+        });
+        it('Transform object parameters to "{...}"', () => {
+            const functionParameter = tracer.stringifyArguments({ property: 'value' }, { what: 'ever' });
+            expect(functionParameter).to.equal('({...}, {...})');
         });
     });
 
-    describe('Log arguments', () => {
-        it('Log value parameters as their value', () => {
-            const valueParameters = tracer.logArguments('text', 100, true, null, undefined, typeof 3);
-            expect(valueParameters).to.equal('(text, 100, true, null, undefined, number)');
+    describe('Start trace', () => {
+        it('should console.log trace start if no active trace', done => {
+            disableLogs(() => {
+                const consoleSpy = sinon.spy(console, 'log');
+                tracer.startTrace();
+                expect(consoleSpy).to.have.been.called;
+                const message = consoleSpy.getCall(0).args[0];
+                expect(message).to.contain('Trace start');
+                consoleSpy.restore();
+            }, done);
         });
-        it('Log function parameter as "() => {}"', () => {
-            const functionExpression = (parameter: number) => parameter^2;
-            const functionParameter = tracer.logArguments(functionExpression, functionExpression);
-            expect(functionParameter).to.equal('(() => {}, () => {})');
+
+        it('should not console.log trace start if active trace', done => {
+            disableLogs(() => {
+                const consoleSpy = sinon.spy(console, 'log');
+                tracer.startTrace();
+                tracer.startTrace();
+                expect(consoleSpy).to.have.been.calledOnce;
+                consoleSpy.restore();
+            }, done);
         });
-        it('Log array parameter as "[...]"', () => {
-            const simpleArray = [1,2,3,4];
-            const complexArray = [simpleArray];
-            const functionParameter = tracer.logArguments(simpleArray, complexArray);
-            expect(functionParameter).to.equal('([...], [...])');
+
+        it('should set and immediate to console.log trace end', done => {
+            disableLogs(() => {
+                tracer.startTrace();
+                const consoleSpy = sinon.spy(console, 'log');
+                expect(consoleSpy).to.not.have.been.called;
+                setImmediate(() => {
+                    expect(consoleSpy).to.have.been.calledOnce;
+                    const message = consoleSpy.getCall(0).args[0];
+                    expect(message).to.contain('Trace end');
+                    consoleSpy.restore();
+                });
+            }, done);
         });
-        it('Log object parameter as "{...}"', () => {
-            const functionParameter = tracer.logArguments({ property: 'value' }, { what: 'ever' });
-            expect(functionParameter).to.equal('({...}, {...})');
+    });
+
+    describe('Trace', () => {
+        it('should call tracer.instrumentFunctionExecution with null "this" when invoked with a function', done => {
+            disableLogs(() => {
+                const functionExpression = () => {};
+                const logSpy = sinon.spy(tracer, 'instrumentFunctionExecution');
+                tracer.trace(functionExpression)();
+                expect(logSpy).to.have.been.calledWith(functionExpression, null);
+                logSpy.restore();
+            }, done);
+        });
+
+        it('should call tracer.instrumentFunctionExecution with corresponding "this" when invoked with a function', done => {
+            disableLogs(() => {
+                const logSpy = sinon.spy(tracer, 'instrumentFunctionExecution');
+                tracer.trace('log', console)();
+                expect(logSpy).to.have.been.calledWith(console.log, console);
+                logSpy.restore();
+            }, done);
         });
     });
 });

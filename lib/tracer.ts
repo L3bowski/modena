@@ -15,11 +15,12 @@ export const info = (content: any) => {
     winston.info(indent(callStackDepth), content);
 };
 
-export const log = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
+export const instrumentFunctionExecution = <T>(functionExpression: (...parameters: any[]) => T, thisObject: any) => {
     return (...parameters: any[]) => {
         startTrace();
         try {
-            winston.info(indent(callStackDepth) + (functionExpression.name || 'anonymous_function') + logArguments(...parameters));
+            winston.info(indent(callStackDepth) + (functionExpression.name || 'anonymous_function') +
+                stringifyArguments(...parameters));
             callStackDepth++;
             const result: T = functionExpression.call(thisObject, ...parameters);
             callStackDepth--;
@@ -33,7 +34,19 @@ export const log = <T>(functionExpression: (...parameters: any[]) => T, thisObje
     };
 };
 
-export const logArguments = (...parameters: any[]) => {
+export const setUpTracer = (modenaConfig: ModenaConfig) => {
+    if (modenaConfig.ENABLE_CONSOLE_LOGS === 'false') {
+        winston.remove(winston.transports.Console);    
+    }
+    
+    if (modenaConfig.LOG_FILENAME && modenaConfig.LOG_FILENAME.length > 0) {
+        winston.add(winston.transports.File, {
+            filename: modenaConfig.LOG_FILENAME
+        });
+    }
+};
+
+export const stringifyArguments = (...parameters: any[]) => {
     const stringifiedArguments = Object.keys(parameters).map(key => {
         const argument = parameters[key as any];
         let stringifiedArgument = argument + '';
@@ -52,29 +65,6 @@ export const logArguments = (...parameters: any[]) => {
     return `(${stringifiedArguments})`;
 };
 
-export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | string, thisObject?: any) => {
-    let tracedFunction: (...parameters: any[]) => T;
-    if (typeof functionExpression === 'function') {
-        tracedFunction = log(functionExpression, null);
-    }
-    else {
-        tracedFunction = log(thisObject[functionExpression], thisObject);
-    }
-    return tracedFunction;
-};
-
-export const setUpTracer = (modenaConfig: ModenaConfig) => {
-    if (modenaConfig.ENABLE_CONSOLE_LOGS === 'false') {
-        winston.remove(winston.transports.Console);    
-    }
-    
-    if (modenaConfig.LOG_FILENAME && modenaConfig.LOG_FILENAME.length > 0) {
-        winston.add(winston.transports.File, {
-            filename: modenaConfig.LOG_FILENAME
-        });
-    }
-};
-
 export const startTrace = () => {
     if (!activeTrace) {
         console.log('Trace start: ' + getTimestamp() + '-------------------------');
@@ -84,6 +74,17 @@ export const startTrace = () => {
             console.log('Trace end: ' + getTimestamp() + '-------------------------');
         });
     }
+};
+
+export const trace = <T>(functionExpression: ((...parameters: any[]) => T) | string, thisObject?: any) => {
+    let tracedFunction: (...parameters: any[]) => T;
+    if (typeof functionExpression === 'function') {
+        tracedFunction = instrumentFunctionExecution(functionExpression, null);
+    }
+    else {
+        tracedFunction = instrumentFunctionExecution(thisObject[functionExpression], thisObject);
+    }
+    return tracedFunction;
 };
 
 export default {
