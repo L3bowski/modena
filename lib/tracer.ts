@@ -83,7 +83,7 @@ export const setUpTracer = (modenaConfig: ModenaConfig) => {
     }
 };
 
-const startTrace = () => {
+export const startTrace = () => {
     if (!activeTrace) {
         console.log('Trace start: ' + getTimestamp() + '-------------------------');
         activeTrace = true;

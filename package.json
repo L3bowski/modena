@@ -29,9 +29,13 @@
     "@types/node-sass": "^3.10.32",
     "@types/passport": "^0.4.6",
     "@types/passport-local": "^1.0.33",
+    "@types/sinon": "^5.0.2",
+    "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "nyc": "^12.0.2",
+    "sinon": "^6.3.3",
+    "sinon-chai": "^3.2.0",
     "source-map-support": "^0.5.9",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
@@ -60,7 +64,9 @@
     "extension": [
       ".ts"
     ],
+    "include": "lib",
     "exclude": [
+      "lib/types.ts",
       "**/*.d.ts",
       "**/*.test.ts"
     ],
