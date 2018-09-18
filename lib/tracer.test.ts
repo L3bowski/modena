@@ -202,4 +202,26 @@ describe('Tracer', () => {
             logSpy.restore();
         });
     });
+
+    describe('Log arguments', () => {
+        it('Log value parameters as their value', () => {
+            const valueParameters = tracer.logArguments('text', 100, true, null, undefined, typeof 3);
+            expect(valueParameters).to.equal('(text, 100, true, null, undefined, number)');
+        });
+        it('Log function parameter as "() => {}"', () => {
+            const functionExpression = (parameter: number) => parameter^2;
+            const functionParameter = tracer.logArguments(functionExpression, functionExpression);
+            expect(functionParameter).to.equal('(() => {}, () => {})');
+        });
+        it('Log array parameter as "[...]"', () => {
+            const simpleArray = [1,2,3,4];
+            const complexArray = [simpleArray];
+            const functionParameter = tracer.logArguments(simpleArray, complexArray);
+            expect(functionParameter).to.equal('([...], [...])');
+        });
+        it('Log object parameter as "{...}"', () => {
+            const functionParameter = tracer.logArguments({ property: 'value' }, { what: 'ever' });
+            expect(functionParameter).to.equal('({...}, {...})');
+        });
+    });
 });
