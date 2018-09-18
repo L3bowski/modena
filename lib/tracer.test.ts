@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import winston from 'winston';
 import * as tracer from './tracer';
+import { ModenaConfig } from './types';
 
 use(sinonChai);
 
@@ -136,6 +137,52 @@ describe('Tracer', () => {
                     consoleSpy.restore();
                 });
             }, done);
+        });
+    });
+
+    describe('Setup Tracer', () => {
+        it('should remove console logs if ENABLE_CONSOLE_LOGS set to false', () => {
+            const modenaConfig: ModenaConfig = {
+                ENABLE_CONSOLE_LOGS: 'false'
+            };
+            const winstonSpy = sinon.spy(winston, 'remove');
+            tracer.setUpTracer(modenaConfig);
+            expect(winstonSpy).to.have.been.calledOnce;
+            winstonSpy.restore();
+        });
+        it('should not remove console logs if ENABLE_CONSOLE_LOGS is not set to false', () => {
+            const modenaConfig: ModenaConfig = {
+                ENABLE_CONSOLE_LOGS: 'true'
+            };
+            const winstonSpy = sinon.spy(winston, 'remove');
+            tracer.setUpTracer(modenaConfig);
+            expect(winstonSpy).to.not.have.been.called;
+            winstonSpy.restore();
+        });
+        it('should not add logs file when no LOG_FILENAME is provided', () => {
+            const modenaConfig: ModenaConfig = {};
+            const winstonSpy = sinon.spy(winston, 'add');
+            tracer.setUpTracer(modenaConfig);
+            expect(winstonSpy).to.not.have.been.called;
+            winstonSpy.restore();
+        });
+        it('should not add logs file when invalid LOG_FILENAME is provided', () => {
+            const modenaConfig: ModenaConfig = {
+                LOG_FILENAME: ''
+            };
+            const winstonSpy = sinon.spy(winston, 'add');
+            tracer.setUpTracer(modenaConfig);
+            expect(winstonSpy).to.not.have.been.called;
+            winstonSpy.restore();
+        });
+        it('should add logs file when valid LOG_FILENAME is provided', () => {
+            const modenaConfig: ModenaConfig = {
+                LOG_FILENAME: 'production.logs'
+            };
+            const winstonSpy = sinon.spy(winston, 'add');
+            tracer.setUpTracer(modenaConfig);
+            expect(winstonSpy).to.have.been.calledOnce;
+            winstonSpy.restore();
         });
     });
 });
