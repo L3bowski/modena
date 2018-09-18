@@ -1,3 +1,11 @@
+export const getTimestamp = () => {
+    const currentDate = new Date(Date.now());
+    const timestamp = stringifyTo2Digits(currentDate.getHours()) + ':' +
+        stringifyTo2Digits(currentDate.getMinutes()) + ':' +
+        stringifyTo2Digits(currentDate.getSeconds());
+    return timestamp;
+};
+
 export const indent = (indentation: number) => '    '.repeat(indentation);
 
 export const stringifyTo2Digits = (value: number) => stringifyToNDigits(value, 2);

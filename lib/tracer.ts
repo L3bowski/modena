@@ -1,5 +1,5 @@
 import winston from 'winston';
-import { indent, stringifyTo2Digits } from './format';
+import { getTimestamp, indent } from './format';
 import { ModenaConfig } from './types';
 
 let activeTrace = false;
@@ -8,14 +8,6 @@ let callStackDepth = 0;
 export const error = (content: any) => {
     startTrace();
     winston.error(indent(callStackDepth), content);
-};
-
-const getTimestamp = () => {
-    const currentDate = new Date();
-    const timestamp = stringifyTo2Digits(currentDate.getHours()) + ':' +
-        stringifyTo2Digits(currentDate.getMinutes()) + ':' +
-        stringifyTo2Digits(currentDate.getSeconds());
-    return timestamp;
 };
 
 export const info = (content: any) => {
