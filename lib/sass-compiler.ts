@@ -1,13 +1,8 @@
-import { existsSync, mkdirSync, readdirSync, writeFile } from 'fs';
+import { existsSync, readdirSync, writeFile } from 'fs';
 import { render } from 'node-sass';
 import { join } from 'path';
 import { AppConfig } from './types';
-
-const ensureDirectory = (directoryPath: string) => {
-    if (!existsSync(directoryPath)){
-        mkdirSync(directoryPath);
-    }
-};
+import { ensureDirectory } from './utils';
 
 const compileSassFile = (inputFile: string, outputFile: string) => {
     if (existsSync(inputFile)) {

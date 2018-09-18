@@ -1,12 +1,8 @@
-import { existsSync, lstatSync, readdirSync } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
-
-const isDirectory = (path: string) => lstatSync(path).isDirectory();
-
-const getDirectoriesName = (path: string) =>
-    readdirSync(path).filter(name => isDirectory(join(path, name)));
+import { getDirectoriesName } from './utils';
 
 export const discoverApps = (modenaConfig: ModenaConfig) => {
     const appsFolderName = tracer.trace(getDirectoriesName)(modenaConfig.APPS_FOLDER);
