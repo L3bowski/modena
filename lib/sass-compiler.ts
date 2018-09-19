@@ -3,6 +3,7 @@ import { render } from 'node-sass';
 import { join } from 'path';
 import { AppConfig } from './types';
 import { ensureDirectory } from './utils';
+import tracer from './tracer';
 
 const compileSassFile = (inputFile: string, outputFile: string) => {
     if (existsSync(inputFile)) {
@@ -11,12 +12,12 @@ const compileSassFile = (inputFile: string, outputFile: string) => {
         };
         const callback = function(renderError: any, result: any) {
             if (renderError) {
-                console.log(renderError);
+                tracer.error(renderError);
             }
             else {
                 writeFile(outputFile, result.css.toString(), fileError => {
                     if (fileError) {
-                        console.log(fileError);
+                        tracer.error(fileError);
                     }
                 });
             }

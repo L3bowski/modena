@@ -67,11 +67,11 @@ export const stringifyArguments = (...parameters: any[]) => {
 
 export const startTrace = () => {
     if (!activeTrace) {
-        console.log('Trace start: ' + getTimestamp() + '-------------------------');
+        winston.info('Trace start: ' + getTimestamp() + '-------------------------');
         activeTrace = true;
         setImmediate(() => {
             activeTrace = false;
-            console.log('Trace end: ' + getTimestamp() + '-------------------------');
+            winston.info('Trace end: ' + getTimestamp() + '-------------------------');
         });
     }
 };
