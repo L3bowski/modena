@@ -22,9 +22,9 @@ export interface AppUtils {
 export interface ModenaConfig {
     APPS_FOLDER?: string;
     DEFAULT_APP?: string;
-    ENABLE_CONSOLE_LOGS?: any;
+    DISABLE_CONSOLE_LOGS?: string;
     LOG_FILENAME?: string;
-    PORT?: any;
+    PORT?: string;
     SESSION_SECRET?: string;
     afterRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     beforeRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;

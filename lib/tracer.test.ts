@@ -158,19 +158,17 @@ describe('Tracer', () => {
     });
 
     describe('Setup tracer', () => {
-        it('should remove console logs if ENABLE_CONSOLE_LOGS set to false', () => {
+        it('should remove console logs if DISABLE_CONSOLE_LOGS set to true', () => {
             const modenaConfig: ModenaConfig = {
-                ENABLE_CONSOLE_LOGS: 'false'
+                DISABLE_CONSOLE_LOGS: 'true'
             };
             const winstonSpy = sinon.spy(winston, 'remove');
             tracer.setUpTracer(modenaConfig);
             expect(winstonSpy).to.have.been.calledOnce;
             winstonSpy.restore();
         });
-        it('should not remove console logs if ENABLE_CONSOLE_LOGS is not set to false', () => {
-            const modenaConfig: ModenaConfig = {
-                ENABLE_CONSOLE_LOGS: 'true'
-            };
+        it('should not remove console logs if DISABLE_CONSOLE_LOGS is not set', () => {
+            const modenaConfig: ModenaConfig = {};
             const winstonSpy = sinon.spy(winston, 'remove');
             tracer.setUpTracer(modenaConfig);
             expect(winstonSpy).to.not.have.been.called;

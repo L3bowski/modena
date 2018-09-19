@@ -35,7 +35,7 @@ export const instrumentFunctionExecution = <T>(functionExpression: (...parameter
 };
 
 export const setUpTracer = (modenaConfig: ModenaConfig) => {
-    if (modenaConfig.ENABLE_CONSOLE_LOGS === 'false') {
+    if (modenaConfig.DISABLE_CONSOLE_LOGS === 'true') {
         winston.remove(winston.transports.Console);    
     }
     
