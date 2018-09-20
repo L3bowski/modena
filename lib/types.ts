@@ -1,3 +1,5 @@
+import express from 'express';
+
 export interface AppConfig {
     name: string;
     modenaSetupPath?: string;
@@ -26,7 +28,15 @@ export interface ModenaConfig {
     LOG_FILENAME?: string;
     PORT?: string;
     SESSION_SECRET?: string;
-    afterRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
-    beforeRegisteringApps?: (server: Express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
+    afterRegisteringApps?: (server: express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
+    beforeRegisteringApps?: (server: express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     [key: string]: any;
+}
+
+export interface IsolatedResponse extends express.Response {
+    _render?(view: string, options?: Object, callback?: (err: Error, html: string) => void): void;
+}
+
+export interface ModenaQueryParameters extends Object {
+    $modena?: string;
 }

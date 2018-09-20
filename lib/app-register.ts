@@ -1,5 +1,5 @@
 import bodyParser from 'body-parser';
-import express, { Handler } from 'express';
+import express from 'express';
 import assets from 'express-asset-versions';
 import session from 'express-session';
 import passport from 'passport';
@@ -39,11 +39,11 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
     }
 
     const assetsPath = join(appConfig.path, appConfig.assetsFolder);
-    let routerPromise: Promise<Handler | void> = Promise.resolve();
+    let routerPromise: Promise<express.RequestHandler | void> = Promise.resolve();
 
     if (appConfig.modenaSetupPath != null) {
-        const { configureRouter } = require(appConfig.modenaSetupPath);
-        const tracedConfigureRoute = tracer.trace(configureRouter as () => Handler);
+        const { configureRouter  } = require(appConfig.modenaSetupPath);
+        const tracedConfigureRoute = tracer.trace(configureRouter as () => express.RequestHandler);
 
         routerPromise = new Promise((resolve, reject) => {
             try

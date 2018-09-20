@@ -68,7 +68,7 @@ const getStrategyCreator = (namespace: string) => {
 };
 
 const getLogInMiddleware = (namespace: string) => {
-    return function logInMiddleware(req: any, res: any, next: Function) {
+    return function logInMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
 
         function doneCallback(authError: any, user: any, info: any) { 
             if (authError) {
@@ -87,7 +87,7 @@ const getLogInMiddleware = (namespace: string) => {
     };
 };
 
-const logOutMiddleware = (req: any, res: any, next: Function) => {
+const logOutMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     delete req.session.passport;
     return next();
 };

@@ -1,13 +1,14 @@
+import express from 'express';
 import { join } from 'path';
 import { info } from './tracer';
 import tracer from './tracer';
-import { AppConfig, ModenaConfig } from './types';
+import { AppConfig, IsolatedResponse, ModenaConfig, ModenaQueryParameters } from './types';
 
-const isolateViewsAccess = (namespace: string, res: any) => {
+const isolateViewsAccess = (namespace: string, res: IsolatedResponse) => {
     res._render = res.render;
-    res.render = function(viewName: string, parameters: any) {
+    res.render = function(viewName: string, options: Object) {
         const isolateView = join(namespace, 'views', viewName);
-        this._render(isolateView, parameters);
+        res._render(isolateView, options);
     };
 };
 
@@ -31,7 +32,7 @@ export const updateUrlPathname = (namespace: string, relativeUrl: string) => {
 export const getAccessedAppConfig = (
     urlDomain: string,
     urlPathname: string,
-    queryParameters: any,
+    queryParameters: ModenaQueryParameters,
     appsConfig: AppConfig[],
     defaultApp?: string) => {
     
@@ -76,12 +77,11 @@ export const getAccessedAppConfig = (
 };
 
 export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {
-    const appResolverMiddleware = (req: any, res: any, next: any) => {
+    const appResolverMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
         info('Relative url:' + req.url);
 
         const accessedApp = getAccessedAppConfig(req.headers.host, req.url, req.query, appsConfig, modenaConfig.DEFAULT_APP);
         if (accessedApp) {
-            req._namespace = accessedApp.name;
             req.url = updateUrlPathname(accessedApp.name, req.url);
             isolateViewsAccess(accessedApp.name, res);
             info('Accessed app: ' + accessedApp.name);

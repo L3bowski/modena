@@ -20,7 +20,7 @@ export const runServer = (configuration?: ModenaConfig | string) => {
     tracer.info('Starting modena with following configuration');
     Object.keys(modenaConfig).forEach(key => tracer.info(key + ': ' + modenaConfig[key]));
 
-    const server = express();
+    const server: express.Application = express();
     
     server.set('view engine', 'ejs');
     server.set('views', modenaConfig.APPS_FOLDER);
@@ -42,7 +42,7 @@ export const runServer = (configuration?: ModenaConfig | string) => {
             modenaConfig.afterRegisteringApps(server, tracer, modenaConfig, appsConfig);
         }
     
-        server.listen(modenaConfig.PORT, function (error: any) {
+        server.listen(modenaConfig.PORT, (error: any) => {
             if (error) {
                 tracer.error(error);
             }

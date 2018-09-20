@@ -1,16 +1,16 @@
 import { existsSync, readdirSync, writeFile } from 'fs';
-import { render } from 'node-sass';
+import { render, Result, SassError } from 'node-sass';
 import { join } from 'path';
+import tracer from './tracer';
 import { AppConfig } from './types';
 import { ensureDirectory } from './utils';
-import tracer from './tracer';
 
 const compileSassFile = (inputFile: string, outputFile: string) => {
     if (existsSync(inputFile)) {
         const input = {
             file: inputFile
         };
-        const callback = function(renderError: any, result: any) {
+        const callback = function(renderError: SassError, result: Result) {
             if (renderError) {
                 tracer.error(renderError);
             }

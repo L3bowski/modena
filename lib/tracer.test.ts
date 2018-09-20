@@ -47,12 +47,9 @@ describe('Tracer', () => {
         it('should log error through winston', done => {
             disableLogs(() => {
                 const winstonErrorSpy = sinon.spy(winston, 'error');
-                const winstonInfoSpy = sinon.spy(winston, 'info');
                 tracer.error(message);
                 expect(winstonErrorSpy).to.have.been.calledOnceWith('', message);
-                expect(winstonInfoSpy).not.to.have.been.called;
                 winstonErrorSpy.restore();
-                winstonInfoSpy.restore();
             }, done);
         });
 
@@ -78,12 +75,12 @@ describe('Tracer', () => {
     
         it('should log message through winston', done => {
             disableLogs(() => {
-                const winstonErrorSpy = sinon.spy(winston, 'error');
                 const winstonInfoSpy = sinon.spy(winston, 'info');
                 tracer.info(message);
-                expect(winstonErrorSpy).not.to.have.been.called;
-                expect(winstonInfoSpy).to.have.been.calledOnceWith('', message);
-                winstonErrorSpy.restore();
+                expect(winstonInfoSpy).to.have.been.calledTwice;
+                const infoArguments = winstonInfoSpy.getCall(1).args;
+                expect(infoArguments[0]).to.equal('');
+                expect(infoArguments[1]).to.equal(message);
                 winstonInfoSpy.restore();
             }, done);
         });
@@ -92,9 +89,9 @@ describe('Tracer', () => {
             disableLogs(() => {
                 const winstonInfoSpy = sinon.spy(winston, 'info');
                 tracer.trace(() => tracer.info(message))();
-                // The trace function calls winston.info
-                expect(winstonInfoSpy).to.have.been.calledTwice;
-                const infoArguments = winstonInfoSpy.getCall(1).args;
+                // The trace function calls winston.info twice
+                expect(winstonInfoSpy).to.have.been.calledThrice;
+                const infoArguments = winstonInfoSpy.getCall(2).args;
                 expect(infoArguments[0]).to.equal('    ');
                 expect(infoArguments[1]).to.equal(message);
                 winstonInfoSpy.restore();
@@ -128,7 +125,7 @@ describe('Tracer', () => {
                 const functionExpression = () => {};
                 const winstonSpy = sinon.spy(winston, 'info');
                 tracer.instrumentFunctionExecution(functionExpression, null)();
-                expect(winstonSpy).to.have.been.calledOnce;
+                expect(winstonSpy).to.have.been.calledTwice;
                 winstonSpy.restore();
             }, done);
         });
@@ -224,37 +221,37 @@ describe('Tracer', () => {
     });
 
     describe('Start trace', () => {
-        it('should console.log trace start if no active trace', done => {
+        it('should winston.info trace start if no active trace', done => {
             disableLogs(() => {
-                const consoleSpy = sinon.spy(console, 'log');
+                const winstonInfoSpy = sinon.spy(winston, 'info');
                 tracer.startTrace();
-                expect(consoleSpy).to.have.been.called;
-                const message = consoleSpy.getCall(0).args[0];
+                expect(winstonInfoSpy).to.have.been.called;
+                const message = winstonInfoSpy.getCall(0).args[0];
                 expect(message).to.contain('Trace start');
-                consoleSpy.restore();
+                winstonInfoSpy.restore();
             }, done);
         });
 
-        it('should not console.log trace start if active trace', done => {
+        it('should not winston.info trace start if active trace', done => {
             disableLogs(() => {
-                const consoleSpy = sinon.spy(console, 'log');
+                const winstonInfoSpy = sinon.spy(winston, 'info');
                 tracer.startTrace();
                 tracer.startTrace();
-                expect(consoleSpy).to.have.been.calledOnce;
-                consoleSpy.restore();
+                expect(winstonInfoSpy).to.have.been.calledOnce;
+                winstonInfoSpy.restore();
             }, done);
         });
 
-        it('should set and immediate to console.log trace end', done => {
+        it('should set and immediate to winston.info trace end', done => {
             disableLogs(() => {
                 tracer.startTrace();
-                const consoleSpy = sinon.spy(console, 'log');
-                expect(consoleSpy).to.not.have.been.called;
+                const winstonInfoSpy = sinon.spy(winston, 'info');
+                expect(winstonInfoSpy).to.not.have.been.called;
                 setImmediate(() => {
-                    expect(consoleSpy).to.have.been.calledOnce;
-                    const message = consoleSpy.getCall(0).args[0];
+                    expect(winstonInfoSpy).to.have.been.calledOnce;
+                    const message = winstonInfoSpy.getCall(0).args[0];
                     expect(message).to.contain('Trace end');
-                    consoleSpy.restore();
+                    winstonInfoSpy.restore();
                 });
             }, done);
         });

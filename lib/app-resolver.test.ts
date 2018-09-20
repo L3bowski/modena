@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { getAccessedAppConfig, updateUrlPathname } from '../lib/app-resolver';
-import { AppConfig } from '../lib/types';
+import { AppConfig, ModenaQueryParameters } from '../lib/types';
 
-const serializeQueryParameters = (queryParameters: any) => queryParameters.$modena ?
+const serializeQueryParameters = (queryParameters: ModenaQueryParameters) => queryParameters.$modena ?
     `?$modena=${queryParameters.$modena}` : ``;
 
 const testUrlResolution = (
     urlDomain: string,
     urlPathname: string,
     urlSuffix: string,
-    queryParameters: any,
+    queryParameters: ModenaQueryParameters,
     appsConfig: AppConfig[],
     defaultApp: string,
     expectedAccessedAppConfig: AppConfig,
@@ -37,7 +37,7 @@ const testUrlResolution = (
 const testSuffixedUrlsResolution = (
     urlDomain: string,
     urlPathname: string,
-    queryParameters: any,
+    queryParameters: ModenaQueryParameters,
     appsConfig: AppConfig[],
     defaultApp: string,
     expectedAccessedAppConfig: AppConfig,

@@ -49,7 +49,7 @@ describe('Configuration', () => {
     });
 
     describe('Environment variables', () => {
-        const originalEnv: any = process.env;
+        const originalEnv = process.env;
         let existingModenaConfig: ModenaConfig;
 
         afterEach(() => {
