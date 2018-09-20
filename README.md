@@ -1,12 +1,12 @@
 # modena
 
-Express server wrapper that allows exposing multiple express web applications with in the same express instance, while keeping them isolated from each other.
+Express server wrapper that allows exposing multiple express applications (**hosted-apps**) inside the same express instance while keeping them isolated from each other.
 
 ## Usage
 
-To use modena to host one or more apps a new app must be created (let's call it host-app). All the web applications that need to be exposed from the host-app (let's call them guest-apps) must be placed in the apps folder. Also, all the additional dependencies (i.e. anyone not included in modena dependencies) used in the guest-apps need to be installed in the host-app.
+A new node project (**wrapper-app**) must be created in order to expose any number of applications. The wrapper-app contains the entry file from which express will be started, is responsible for setting environment variables configuration and installs all the dependencies required by the hosted-apps.
 
-Each guest-app will be exposed in the url of the host-app plus the name of the folder in which it is located under apps. For example, in the following example (file structure of a sample host-app), if the host-app is published at **localhost:3000**, the kinder guest-app will be available at **localhost:3000/kinder**. Any other folder located inside the apps folder will be also exposed in the corresponding url.
+A usual wrapper-app folder structure looks like this:
 
 ```bash
 .  
@@ -14,7 +14,7 @@ Each guest-app will be exposed in the url of the host-app plus the name of the f
 │   └── _kinder  
 |       ├── public  
 |       ├── views  
-|       ├── index.js  
+|       ├── index.js
 |       ├── package.json  
 |       └── package-lock.json  
 ├── index.js  
@@ -22,9 +22,7 @@ Each guest-app will be exposed in the url of the host-app plus the name of the f
 └── package-lock.json  
 ```
 
-Also if kinder guest-app is using, let's say, sequelize (or any other dependency not included in modena), sequelize will need to be installed in the host-app as well. This must be done for each guest-app hosted in the host-app.
-
-The host-app index.js looks like this
+The entry file (index.js) just loads the configuration if required and starts the express server:
 
 ```javascript
 const { runServer } = require('modena');
@@ -35,7 +33,7 @@ const config = { ... };
 runServer(config);
 ```
 
-and it gets up and running in the usual way
+Finally, the wrapper-app can be run as per usual:
 
 ```bash
 npm install
@@ -43,8 +41,33 @@ npm install
 node index.js # or 'npm start' if the start script has been defined in the package.json
 ```
 
+## App discovery
+
+Modena scans the **apps** folder (the folder name can be changed through modena configuration options) and expose each folder using the folder name as the relative URL. In the example above, the kinder application would be exposed at **localhost/kinder**.
+
+By default, modena exposes the **public** folder for each hosted-app through express static built-in middleware (the name of the public folder can be changed through configuration). Additionally, modena will search for the following two files inside each hosted-app:
+
+- **modena-setup.js**: Must export a function tant returns an express Router or Promise<Router>. The router will be used to expose additional endpoints from the app relative url. (TODO Explain the configureRouter parameters in the next section)
+
+- **modena-config.json**: Contains a JSON object with modena app-configuration options and any other property that might be used during the modena-setup (see app-configuration TODO)
+
+The recommended case for folder names is kebab-case (e.g. valid-folder-name); it results in nicer URLs and is required for the environment variables transformation if using Docker (TODO include link to global app- configuration section)
+
+## App registering
+
+[comment]: # TODO Continue
+
+
+
+
+
+
+
+
+
 For examples of applications that can run on modena see [modena-examples](https://github.com/L3bowski/modena-examples). Currently there are two ways to expose a web application with modena:
 
 - Defining and index.js that exports a function that returns an express router (or a Promise returning and express router)
-- Placing static files in a folder called public inside the guest-app folder (the public folder name can be customized through a modena-config.json file in the root folder of the guest-app)
+- Placing static files in a folder called public inside the hosted-app folder (the public folder name can be customized through a modena-config.json file in the root folder of the hosted-app)
 
+[comment]: # TODO Congifuration options
