@@ -9,6 +9,16 @@ import { compileAppSass } from './sass-compiler';
 import tracer from './tracer';
 import { AppConfig, AppMiddleware, AppUtils, ModenaConfig } from './types';
 
+type ConfigureEndpoints = (router: express.Router, config: AppConfig, middleware: AppMiddleware, utils: AppUtils) => void | Promise<void>;
+
+export const configureEndpoints =
+    (callback: ConfigureEndpoints) => {
+        const _configureEndpoints: ConfigureEndpoints = (_router, _config, _middleware, _utils) => {
+            return callback(_router, _config, _middleware, _utils);
+        }
+        return tracer.trace(_configureEndpoints);
+    };
+
 const registerApp = (server: express.Application, modenaConfig: ModenaConfig, appConfig: AppConfig) => {
     tracer.info(`Registering app ${appConfig.name} with following configuration`);
     Object.keys(appConfig).forEach(key => tracer.info(key + ': ' + appConfig[key]));
@@ -38,39 +48,40 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
         tracer.trace(compileAppSass)(appConfig);
     }
 
-    const assetsPath = join(appConfig.path, appConfig.assetsFolder);
-    let routerPromise: Promise<express.RequestHandler | void> = Promise.resolve();
+    let routerPromise: Promise<express.Router | void> = Promise.resolve();
+    const handleError = (error: any) => {
+        tracer.error('An error occurred when trying to register ' + appConfig.name);
+        tracer.error(error);
+    };
 
     if (appConfig.modenaSetupPath != null) {
-        const { configureRouter  } = require(appConfig.modenaSetupPath);
-        const tracedConfigureRoute = tracer.trace(configureRouter as () => express.RequestHandler);
-
-        routerPromise = new Promise((resolve, reject) => {
-            try
-            {
-                const appRouter = tracedConfigureRoute(appMiddleware, appUtils, appConfig);
-                resolve(appRouter);
-            }
-            catch(error)
-            {
-                reject(error);
-            }
-        });
+        try
+        {
+            const appRouter = express.Router();
+            const endpointsConfiguration: ConfigureEndpoints = require(appConfig.modenaSetupPath);
+            routerPromise = Promise.resolve(endpointsConfiguration(appRouter, appConfig, appMiddleware, appUtils))
+                .then(_ => appRouter)
+                .catch(handleError);
+        }
+        catch(error)
+        {
+            handleError(error);
+        }
     }
 
     return routerPromise
     .then(appRouter => {
         tracer.info(`Registering ${appConfig.name} routes`);
+
+        const assetsPath = join(appConfig.path, appConfig.assetsFolder);
         server.use('/' + appConfig.name, express.static(assetsPath));
         server.use(assets('/' + appConfig.name, assetsPath));
+
         if (appRouter) {
             server.use('/' + appConfig.name, appRouter);
         }
     })
-    .catch(error => {
-        tracer.error('An error occurred when trying to register ' + appConfig.name);
-        tracer.error(error);
-    });    
+    .catch(handleError);    
 };
 
 const tracedRegisterApp = tracer.trace(registerApp);

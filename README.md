@@ -11,12 +11,13 @@ A usual wrapper-app folder structure looks like this:
 ```bash
 .  
 ├── _apps  
-│   └── _kinder  
-|       ├── public  
-|       ├── views  
-|       ├── index.js
-|       ├── package.json  
-|       └── package-lock.json  
+│   ├── _kinder  
+|   |    ├── public  
+|   |    ├── views  
+|   |    ├── index.js
+|   |    ├── package.json  
+|   |    └── package-lock.json  
+|   └──_(...)
 ├── index.js  
 ├── package.json  
 └── package-lock.json  
@@ -55,19 +56,20 @@ The recommended case for folder names is kebab-case (e.g. valid-folder-name); it
 
 ## App registering
 
-[comment]: # TODO Continue
+TODO Explain it from the point of view of the one who registers
 
+For each folder found in the apps folder, modena exposes the assets folder (named public by default). If the app contains a **modena-setup.js** file, it will also require it and execute the default function it exports with the following parameters
 
+- router: express.Router
+- config: AppConfig
+- middleware: AppMiddleware
+- utils: AppUtils
 
-
-
-
-
-
+TODO Continue from here
 
 For examples of applications that can run on modena see [modena-examples](https://github.com/L3bowski/modena-examples). Currently there are two ways to expose a web application with modena:
 
 - Defining and index.js that exports a function that returns an express router (or a Promise returning and express router)
 - Placing static files in a folder called public inside the hosted-app folder (the public folder name can be customized through a modena-config.json file in the root folder of the hosted-app)
 
-[comment]: # TODO Congifuration options
+TODO Congifuration options

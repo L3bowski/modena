@@ -1,6 +1,6 @@
 import express from 'express';
 import { discoverApps } from './app-discovery';
-import { tracedRegisterApps } from './app-register';
+import { tracedRegisterApps, configureEndpoints } from './app-register';
 import { getAppResolverMiddleware } from './app-resolver';
 import {defaultConfig, extractAppsConfiguration, overrideEnvironmentParameters, readConfigFile} from './configuration';
 import { tracedConfigurePassport } from './passport';
@@ -54,6 +54,7 @@ export const runServer = (configuration?: ModenaConfig | string) => {
 };
 
 export default {
+    configureEndpoints,
     express,
     readConfigFile,
     runServer,
@@ -61,6 +62,7 @@ export default {
 };
 
 module.exports = {
+    configureEndpoints,
     express,
     readConfigFile,
     runServer,
