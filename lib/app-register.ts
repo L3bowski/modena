@@ -19,6 +19,11 @@ export const configureEndpoints =
         return tracer.trace(_configureEndpoints);
     };
 
+const getErrorHandler= (appName: string) => (error: any) => {
+    tracer.error('An error occurred when trying to register ' + appName);
+    tracer.error(error);
+};
+
 const registerApp = (server: express.Application, modenaConfig: ModenaConfig, appConfig: AppConfig) => {
     tracer.info(`Registering app ${appConfig.name} with following configuration`);
     Object.keys(appConfig).forEach(key => tracer.info(key + ': ' + appConfig[key]));
@@ -48,40 +53,26 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
         tracer.trace(compileAppSass)(appConfig);
     }
 
-    let routerPromise: Promise<express.Router | void> = Promise.resolve();
-    const handleError = (error: any) => {
-        tracer.error('An error occurred when trying to register ' + appConfig.name);
-        tracer.error(error);
-    };
+    tracer.info(`Registering ${appConfig.name} routes`);
+
+    const assetsPath = join(appConfig.path, appConfig.assetsFolder);
+    server.use('/' + appConfig.name, express.static(assetsPath));
+    server.use(assets('/' + appConfig.name, assetsPath));        
 
     if (appConfig.modenaSetupPath != null) {
         try
         {
             const appRouter = express.Router();
-            const endpointsConfiguration: ConfigureEndpoints = require(appConfig.modenaSetupPath);
-            routerPromise = Promise.resolve(endpointsConfiguration(appRouter, appConfig, appMiddleware, appUtils))
-                .then(_ => appRouter)
-                .catch(handleError);
+            const configureEndpoints: ConfigureEndpoints = require(appConfig.modenaSetupPath);
+            Promise.resolve(configureEndpoints(appRouter, appConfig, appMiddleware, appUtils))
+                .then(_ => server.use('/' + appConfig.name, appRouter))
+                .catch(getErrorHandler(appConfig.name));
         }
         catch(error)
         {
-            handleError(error);
+            getErrorHandler(appConfig.name)(error);
         }
     }
-
-    return routerPromise
-    .then(appRouter => {
-        tracer.info(`Registering ${appConfig.name} routes`);
-
-        const assetsPath = join(appConfig.path, appConfig.assetsFolder);
-        server.use('/' + appConfig.name, express.static(assetsPath));
-        server.use(assets('/' + appConfig.name, assetsPath));
-
-        if (appRouter) {
-            server.use('/' + appConfig.name, appRouter);
-        }
-    })
-    .catch(handleError);    
 };
 
 const tracedRegisterApp = tracer.trace(registerApp);
