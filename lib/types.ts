@@ -16,8 +16,19 @@ export interface AppMiddleware {
     session?: any;
 }
 
+export interface AppRouterPromise {
+    hasError: boolean;
+    appRouter?: express.Router;
+}
+
 export interface AppUtils {
     userManagementUtils?: any;
+}
+
+export type ConfigureEndpoints = (router: express.Router, config: AppConfig, middleware: AppMiddleware, utils: AppUtils) => void | Promise<void>;
+
+export interface IsolatedResponse extends express.Response {
+    _render?(view: string, options?: Object, callback?: (err: Error, html: string) => void): void;
 }
 
 // The ModenaConfig properties use SNAKE_CASE for Docker compatibility
@@ -31,10 +42,6 @@ export interface ModenaConfig {
     afterRegisteringApps?: (server: express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     beforeRegisteringApps?: (server: express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     [key: string]: any;
-}
-
-export interface IsolatedResponse extends express.Response {
-    _render?(view: string, options?: Object, callback?: (err: Error, html: string) => void): void;
 }
 
 export interface ModenaQueryParameters extends Object {
