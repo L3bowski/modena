@@ -53,6 +53,7 @@ const getAppRouter = (appConfig: AppConfig, appMiddleware: AppMiddleware, appUti
                     resolve({hasError: false, appRouter});
                 }
                 else {
+                    tracer.info(`Waiting for ${appConfig.name} asynchronous endpoints configuration...`);
                     // Means the configureEndpoints is asynchronous;
                     // The routerPromise must be resolved on appPromise completion
                     appPromise
