@@ -1,10 +1,10 @@
 # modena
 
-Express server wrapper that allows exposing multiple express applications (**hosted-apps**) inside the same express instance while keeping them isolated from each other.
+Express server wrapper that allows exposing multiple express applications, **hosted-apps**, inside the same express instance while keeping them isolated from each other.
 
 ## Usage
 
-A new node project (**wrapper-app**) must be created in order to expose any number of applications. The wrapper-app contains the entry file from which express will be started, is responsible for setting environment variables configuration and installs all the dependencies required by the hosted-apps.
+A new node project, **wrapper-app**, must be created in order to expose any number of applications. The wrapper-app contains the entry file from which express will be started, is responsible for setting environment variables configuration and installs all the dependencies required by the hosted-apps.
 
 A usual wrapper-app folder structure looks like this:
 
@@ -23,7 +23,7 @@ A usual wrapper-app folder structure looks like this:
 └── package-lock.json  
 ```
 
-The entry file (index.js) just loads the configuration if required and starts the express server:
+The entry file just loads the configuration if required and starts the express server:
 
 ```javascript
 const { runServer } = require('modena');
@@ -51,16 +51,16 @@ By default, modena exposes the **public** folder for each hosted-app through exp
 
 - **modena-config.json**: Must contain an object with app configuration parameters. The object will be injected as an argument to the function exported by modena-setup.js.
 
-The recommended case for folder names is kebab-case (e.g. valid-folder-name); it results in nicer URLs and is required for the environment variables transformation when using Docker (see [defining app environment variables](#defining-app-environment-variables)).
+The recommended case for folder names is kebab-case (e.g. valid-folder-name); it results in nicer URLs and is required for the environment variables transformation when using Docker (see [defining app-specific environment variables](#defining-app-specific-environment-variables)).
 
 ## App registering
 
 For each folder found in the apps folder, modena exposes the assets folder (named public by default) using the folder name as the relative URL. Additionally, if the app contains a **modena-setup.js** file, it will also require it and execute the default function it exports with the following parameters:
 
-- router: express.Router that will be exposed at the app name relative URL
-- config: Configuration parameters including the ones defined in modena-config.json and the app environment variables defined in the modena configuration (see defining app environment variables)
-- middleware: An AppMiddleware instance that includes json parsing middleware (through body-parser), session middleware (through express-session), etc.
-- utils: An AppUtils instance containing, for now, a function to define passport authentication strategies and get passport logging middleware
+- **router**: express.Router that will be exposed at the app name relative URL
+- **config**: Configuration parameters including the ones defined in modena-config.json and the app environment variables defined in the modena configuration (see defining app-specific environment variables)
+- **middleware**: An AppMiddleware instance that includes json parsing middleware (through body-parser), session middleware (through express-session), etc.
+- **utils**: An AppUtils instance containing, for now, a function to define passport authentication strategies and get passport logging middleware
 
 If the endpoint configuration is asynchronous (e.g., it requires database synchronization on application start up), the exported function must return a promise. If no promise is returned, modena might start the express server without registering the application routes.
 
@@ -74,7 +74,40 @@ module.exports = configureEndpoints((router, config, middleware, utils) => {
 
 ## App URL resolver
 
-## Defining app environment variables
+## Defining global environment variables
+
+TODO runServer can receive an string
+
+## Defining app-specific environment variables
+
+Some application settings can not be hardcoded in the code (e.g. passwords, database connection strings, api keys, etc.). For that purpose, modena allows defining parameters in the **wrapper-app** configuration that will then be passed to a **hosted-app** configuration object.
+
+For modena to know that a parameter needs to be transfered to an application, the parameter name must begin with the application name in SNAKE_CASE (capitalized and replacing the dashes with underscores) followed by two underscores and then the parameter name in SNAKE_CASE too. Notice that any parameter that match this criteria will be removed from the global configuration and transfered to the matching application configuration.
+
+The restriction on the parameter names is due to the fact that docker environment variables must be defined in SNAKE_CASE and, therefore, this is the only way to make modena docker-compatible.
+
+In the following example, the KINDER_APP__DATABASE_PASSWORD parameter will be passed to the kinder-app application and hence removed from the global configuration:
+
+```javascript
+const { runServer } = require('modena');
+
+const config = {
+    PORT: '3000',
+    KINDER_APP__DATABASE_PASSWORD: 'top_secret'
+};
+
+runServer(config);
+```
+
+Later on, the kinder-app will receive the parameter when configuring the endpoints:
+
+```javascript
+module.exports = configureEndpoints((router, config, middleware, utils) => {
+    /// ...
+    config.DATABASE_PASSWORD == 'top_secret'; // true
+    /// ...
+});
+```
 
 ## Application examples
 
