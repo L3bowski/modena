@@ -104,7 +104,7 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
         tracer.trace(compileAppSass)(appConfig);
     }
 
-    getAppRouter(appConfig, appMiddleware, appUtils)
+    return getAppRouter(appConfig, appMiddleware, appUtils)
     .then(routerResult => {
         if (routerResult.hasError) tracer.info(`Partially registering ${appConfig.name} routes`);
         else tracer.info(`Registering ${appConfig.name} routes`);
