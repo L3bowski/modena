@@ -38,7 +38,6 @@ Finally, the wrapper-app can be run as per usual:
 
 ```bash
 npm install
-
 node index.js # or 'npm start' if the start script has been defined in the package.json
 ```
 
@@ -48,28 +47,35 @@ Modena scans the **apps** folder (the folder name can be changed through modena 
 
 By default, modena exposes the **public** folder for each hosted-app through express static built-in middleware (the name of the public folder can be changed through configuration). Additionally, modena will search for the following two files inside each hosted-app:
 
-- **modena-setup.js**: Must export a function tant returns an express Router or Promise<Router>. The router will be used to expose additional endpoints from the app relative url. (TODO Explain the configureRouter parameters in the next section)
+- **modena-setup.js**: Must export a function to configure an express router that will be exposed at the app name relative URL. See [app registering](#app-registering) section for more details
 
-- **modena-config.json**: Contains a JSON object with modena app-configuration options and any other property that might be used during the modena-setup (see app-configuration TODO)
+- **modena-config.json**: Must contain an object with app configuration parameters. The object will be injected as an argument to the function exported by modena-setup.js.
 
-The recommended case for folder names is kebab-case (e.g. valid-folder-name); it results in nicer URLs and is required for the environment variables transformation if using Docker (TODO include link to global app- configuration section)
+The recommended case for folder names is kebab-case (e.g. valid-folder-name); it results in nicer URLs and is required for the environment variables transformation when using Docker (see [defining app environment variables](#defining-app-environment-variables)).
 
 ## App registering
 
-TODO Explain it from the point of view of the one who registers
+For each folder found in the apps folder, modena exposes the assets folder (named public by default) using the folder name as the relative URL. Additionally, if the app contains a **modena-setup.js** file, it will also require it and execute the default function it exports with the following parameters:
 
-For each folder found in the apps folder, modena exposes the assets folder (named public by default). If the app contains a **modena-setup.js** file, it will also require it and execute the default function it exports with the following parameters
+- router: express.Router that will be exposed at the app name relative URL
+- config: Configuration parameters including the ones defined in modena-config.json and the app environment variables defined in the modena configuration (see defining app environment variables)
+- middleware: An AppMiddleware instance that includes json parsing middleware (through body-parser), session middleware (through express-session), etc.
+- utils: An AppUtils instance containing, for now, a function to define passport authentication strategies and get passport logging middleware
 
-- router: express.Router
-- config: AppConfig
-- middleware: AppMiddleware
-- utils: AppUtils
+If the endpoint configuration is asynchronous (e.g., it requires database synchronization on application start up), the exported function must return a promise. If no promise is returned, modena might start the express server without registering the application routes.
 
-TODO Continue from here
+_**Tip**_: When using modena with Typescript, the exported function can passed as a parameter to the configureEndpoints method to get parameters typing information:
 
-For examples of applications that can run on modena see [modena-examples](https://github.com/L3bowski/modena-examples). Currently there are two ways to expose a web application with modena:
+```javascript
+module.exports = configureEndpoints((router, config, middleware, utils) => {
+    /// ...
+});
+```
 
-- Defining and index.js that exports a function that returns an express router (or a Promise returning and express router)
-- Placing static files in a folder called public inside the hosted-app folder (the public folder name can be customized through a modena-config.json file in the root folder of the hosted-app)
+## App URL resolver
 
-TODO Congifuration options
+## Defining app environment variables
+
+## Application examples
+
+For examples of applications that can run on modena see [modena-examples](https://github.com/L3bowski/modena-examples)
