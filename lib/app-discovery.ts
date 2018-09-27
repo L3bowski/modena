@@ -5,6 +5,11 @@ import { AppConfig, ModenaConfig } from './types';
 import { getDirectoriesName } from './utils';
 
 export const discoverApps = (modenaConfig: ModenaConfig) => {
+    if (!modenaConfig.APPS_FOLDER) {
+        tracer.error('No APPS_FOLDER path was provided');
+        return [];
+    }
+
     const appsFolderName = tracer.trace(getDirectoriesName)(modenaConfig.APPS_FOLDER);
     
     tracer.info('Discovered ' + appsFolderName.length + ' folders');
@@ -24,20 +29,21 @@ export const discoverApps = (modenaConfig: ModenaConfig) => {
             const localConfig = require(configFilePath);
             Object.assign(appConfig, localConfig);
         }
+        else {
+            tracer.info(appName + ': No additional configuration found');
+        }
 
         const modenaSetupPath = join(appPath, 'modena-setup.js');
         if (existsSync(modenaSetupPath)) {
             appConfig.modenaSetupPath = modenaSetupPath;
-            tracer.info(appName + ': Loading router configuration');
+            tracer.info(appName + ': Loading endpoints configuration');
         }
         else {
-            tracer.info(appName + ': No router configuration found');
+            tracer.info(appName + ': No endpoints configuration found');
         }
 
         return appConfig;
     });
-
-    tracer.info('Discovered ' + appsConfig.length + ' apps');
 
     return appsConfig;
 };
