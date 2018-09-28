@@ -5,9 +5,9 @@ import mock from 'mock-require';
 import path from 'path';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
+import * as fsUtils from '../utils/fs-utils';
+import tracer from '../utils/tracer';
 import { discoverApps} from './app-discovery';
-import * as fsUtils from './fs-utils';
-import tracer from './tracer';
  
 use(sinonChai);
 

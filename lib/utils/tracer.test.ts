@@ -3,8 +3,8 @@ import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import winston from 'winston';
+import { ModenaConfig } from '../types';
 import * as tracer from './tracer';
-import { ModenaConfig } from './types';
 
 use(sinonChai);
 

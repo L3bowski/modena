@@ -1,16 +1,18 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { AppConfig, ModenaConfig } from './types';
+import { AppConfig, ModenaConfig } from '../types';
+
+export const defaultAppsFolder = join(__dirname, '..', '..', '..', '..', 'apps');
 
 export const defaultConfig = (configParameters: ModenaConfig): ModenaConfig => {
-    // When following line is executed, __dirname equals XXX/node_modules/modena/build
+    // When following line is executed, __dirname equals XXX/node_modules/modena/build/core
     const modenaConfig: ModenaConfig = {
         ...configParameters,
         afterRegisteringApps: configParameters.afterRegisteringApps || null,
-        APPS_FOLDER: configParameters.APPS_FOLDER || join(__dirname, '..', '..', '..', 'apps'),
+        APPS_FOLDER: configParameters.APPS_FOLDER || defaultAppsFolder,
         beforeRegisteringApps: configParameters.beforeRegisteringApps || null,
         DEFAULT_APP: configParameters.DEFAULT_APP || null,
-        DISABLE_CONSOLE_LOGS: configParameters.DISABLE_CONSOLE_LOGS == undefined ? 'false' : configParameters.DISABLE_CONSOLE_LOGS,
+        DISABLE_CONSOLE_LOGS: configParameters.DISABLE_CONSOLE_LOGS === undefined ? 'false' : configParameters.DISABLE_CONSOLE_LOGS,
         LOG_FILENAME: configParameters.LOG_FILENAME || 'logs.txt',
         PORT: configParameters.PORT || '80',
         SESSION_SECRET: configParameters.SESSION_SECRET || null

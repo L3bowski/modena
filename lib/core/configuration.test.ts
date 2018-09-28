@@ -1,8 +1,12 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { join } from 'path';
-import { defaultConfig, extractAppsConfiguration, overrideEnvironmentParameters } from './configuration';
-import { AppConfig, ModenaConfig } from './types';
+import { AppConfig, ModenaConfig } from '../types';
+import {
+    defaultAppsFolder,
+    defaultConfig,
+    extractAppsConfiguration,
+    overrideEnvironmentParameters
+} from './configuration';
 
 describe('Configuration', () => {
 
@@ -15,7 +19,7 @@ describe('Configuration', () => {
             modenaConfig = defaultConfig(configParameters);
 
             expect(modenaConfig.afterRegisteringApps).to.equal(null);
-            expect(modenaConfig.APPS_FOLDER).to.equal(join(__dirname, '..', '..', '..', 'apps'));
+            expect(modenaConfig.APPS_FOLDER).to.equal(defaultAppsFolder);
             expect(modenaConfig.beforeRegisteringApps).to.equal(null);
             expect(modenaConfig.DEFAULT_APP).to.equal(null);
             expect(modenaConfig.DISABLE_CONSOLE_LOGS).to.equal('false');

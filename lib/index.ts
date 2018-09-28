@@ -1,11 +1,16 @@
 import express from 'express';
-import { discoverApps } from './app-discovery';
-import { tracedRegisterApps, configureEndpoints } from './app-register';
-import { getAppResolverMiddleware } from './app-resolver';
-import {defaultConfig, extractAppsConfiguration, overrideEnvironmentParameters, readConfigFile} from './configuration';
-import { tracedConfigurePassport } from './passport';
-import tracer from './tracer';
+import { tracedConfigurePassport } from './app-extensions/passport';
+import { discoverApps } from './core/app-discovery';
+import { configureEndpoints, tracedRegisterApps } from './core/app-register';
+import { getAppResolverMiddleware } from './core/app-resolver';
+import {
+    defaultConfig,
+    extractAppsConfiguration,
+    overrideEnvironmentParameters,
+    readConfigFile
+} from './core/configuration';
 import { ModenaConfig } from './types';
+import tracer from './utils/tracer';
 
 export const runServer = (configuration?: ModenaConfig | string) => {
     let modenaConfig: ModenaConfig = {};
@@ -50,7 +55,8 @@ export const runServer = (configuration?: ModenaConfig | string) => {
                 tracer.info('Express server listening on port ' + modenaConfig.PORT);
             }
         });
-    });
+    })
+    .catch(error => tracer.error(error));
 };
 
 export default {

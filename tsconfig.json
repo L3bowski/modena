@@ -11,10 +11,10 @@
     },
     "include": [
         "external-modules.d.ts",
-        "lib/*"
+        "lib/**/*"
     ],
     "exclude": [
         "node_modules",
-        "lib/*.test.ts"
+        "lib/**/*.test.ts"
     ]
 }

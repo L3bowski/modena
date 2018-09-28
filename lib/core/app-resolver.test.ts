@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { getAccessedAppConfig, updateUrlPathname } from '../lib/app-resolver';
-import { AppConfig, ModenaQueryParameters } from '../lib/types';
+import { AppConfig, ModenaQueryParameters } from '../types';
+import { getAccessedAppConfig, updateUrlPathname } from './app-resolver';
 
 const serializeQueryParameters = (queryParameters: ModenaQueryParameters) => queryParameters.$modena ?
     `?$modena=${queryParameters.$modena}` : ``;

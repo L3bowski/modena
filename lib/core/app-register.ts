@@ -4,16 +4,16 @@ import assets from 'express-asset-versions';
 import session from 'express-session';
 import passport from 'passport';
 import { join } from 'path';
-import { getUserManagementUtils } from './passport';
-import { compileAppSass } from './sass-compiler';
-import tracer from './tracer';
-import { AppConfig, AppMiddleware, AppRouterPromise, AppUtils, ConfigureEndpoints, ModenaConfig } from './types';
+import { getUserManagementUtils } from '../app-extensions/passport';
+import { compileAppSass } from '../app-extensions/sass-compiler';
+import { AppConfig, AppMiddleware, AppRouterPromise, AppUtils, ConfigureEndpoints, ModenaConfig } from '../types';
+import tracer from '../utils/tracer';
 
 export const configureEndpoints =
     (callback: ConfigureEndpoints) => {
         const _configureEndpoints: ConfigureEndpoints = (_router, _config, _middleware, _utils) => {
             return callback(_router, _config, _middleware, _utils);
-        }
+        };
         return tracer.trace(_configureEndpoints);
     };
 
@@ -36,7 +36,7 @@ const getAppMiddleware = (modenaConfig: ModenaConfig, appConfig: AppConfig) => {
         session: sessionMiddleware,
     };
     return appMiddleware;
-}
+};
 
 const getAppRouter = (appConfig: AppConfig, appMiddleware: AppMiddleware, appUtils: AppUtils) => {
     return new Promise<AppRouterPromise>(resolve => {
@@ -45,8 +45,8 @@ const getAppRouter = (appConfig: AppConfig, appMiddleware: AppMiddleware, appUti
             try
             {
                 const appRouter = express.Router();
-                const configureEndpoints: ConfigureEndpoints = require(appConfig.modenaSetupPath);
-                const appPromise = configureEndpoints(appRouter, appConfig, appMiddleware, appUtils);
+                const _configureEndpoints: ConfigureEndpoints = require(appConfig.modenaSetupPath);
+                const appPromise = _configureEndpoints(appRouter, appConfig, appMiddleware, appUtils);
                 if (!appPromise) {
                     // Means the configureEndpoints is synchronous;
                     // The routerPromise can be resolved straight away
@@ -74,7 +74,7 @@ const getAppRouter = (appConfig: AppConfig, appMiddleware: AppMiddleware, appUti
             }
         } 
     });
-}
+};
 
 const getAppUtils = (appConfig: AppConfig, appMiddleware: AppMiddleware) => {
     const appUtils: AppUtils = {};
@@ -91,7 +91,7 @@ const getAppUtils = (appConfig: AppConfig, appMiddleware: AppMiddleware) => {
     }
 
     return appUtils;
-}
+};
 
 const registerApp = (server: express.Application, modenaConfig: ModenaConfig, appConfig: AppConfig) => {
     tracer.info(`Registering app ${appConfig.name} with following configuration`);
@@ -114,7 +114,7 @@ const registerApp = (server: express.Application, modenaConfig: ModenaConfig, ap
         server.use(assets('/' + appConfig.name, assetsPath));        
     
         if (routerResult.appRouter) server.use('/' + appConfig.name, routerResult.appRouter);
-    })
+    });
 };
 
 export const registerApps = (server: express.Application, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => {

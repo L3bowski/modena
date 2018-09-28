@@ -1,6 +1,6 @@
 import winston from 'winston';
+import { ModenaConfig } from '../types';
 import { getTimestamp, indent } from './format';
-import { ModenaConfig } from './types';
 
 let activeTrace = false;
 let callStackDepth = 0;

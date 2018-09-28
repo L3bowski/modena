@@ -1,8 +1,8 @@
 .nyc_output/
 .vscode/
 lib/
-build/*.js.map
-build/*.d.ts
+build/**/*.js.map
+build/**/*.d.ts
 !build/index.d.ts
 node_modules/
 .gitignore

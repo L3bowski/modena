@@ -2,7 +2,7 @@ import express from 'express';
 import passport from 'passport';
 // tslint:disable-next-line:variable-name
 const LocalStrategy = require('passport-local').Strategy;
-import tracer from './tracer';
+import tracer from '../utils/tracer';
 
 const userPrefixSeparator = '||->';
 const deserializers: any = {};

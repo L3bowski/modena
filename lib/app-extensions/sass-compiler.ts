@@ -1,9 +1,9 @@
 import { existsSync, readdirSync, writeFile } from 'fs';
 import { render, Result, SassError } from 'node-sass';
 import { join } from 'path';
-import { ensureDirectory } from './fs-utils';
-import tracer from './tracer';
-import { AppConfig } from './types';
+import { AppConfig } from '../types';
+import { ensureDirectory } from '../utils/fs-utils';
+import tracer from '../utils/tracer';
 
 const compileSassFile = (inputFile: string, outputFile: string) => {
     if (existsSync(inputFile)) {

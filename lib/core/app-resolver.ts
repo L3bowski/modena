@@ -1,8 +1,7 @@
 import express from 'express';
 import { join } from 'path';
-import { info } from './tracer';
-import tracer from './tracer';
-import { AppConfig, IsolatedResponse, ModenaConfig, ModenaQueryParameters } from './types';
+import { AppConfig, IsolatedResponse, ModenaConfig, ModenaQueryParameters } from '../types';
+import { info, trace } from '../utils/tracer';
 
 const isolateViewsAccess = (namespace: string, res: IsolatedResponse) => {
     res._render = res.render;
@@ -93,5 +92,5 @@ export const getAppResolverMiddleware = (modenaConfig: ModenaConfig, appsConfig:
 
         return next();
     };
-    return tracer.trace(appResolverMiddleware);
+    return trace(appResolverMiddleware);
 };
