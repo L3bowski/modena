@@ -3,33 +3,11 @@ import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import winston from 'winston';
+import { disableLogs } from '../test-utils';
 import { ModenaConfig } from '../types';
 import * as tracer from './tracer';
 
 use(sinonChai);
-
-const disableLogs = (callback: Function, done: MochaDone) => {
-    const consoleLog = console.log;
-    const winstonLog = winston.log;
-    const winstonInfo = winston.info;
-    const winstonError = winston.error;
-    console.log = () => {};
-    winston.log = ((): winston.LoggerInstance => ({} as any)) as winston.LogMethod;
-    winston.info = ((): winston.LoggerInstance => ({} as any)) as winston.LeveledLogMethod;
-    winston.error = ((): winston.LoggerInstance => ({} as any)) as winston.LeveledLogMethod;
-    try {
-        callback();
-    }
-    finally {
-        setImmediate(() => {
-            console.log = consoleLog;
-            winston.log = winstonLog;
-            winston.info = winstonInfo;
-            winston.error = winstonError;
-            done();
-        });
-    }
-};
 
 describe('Tracer', () => {
     const message = 'Log message';

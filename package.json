@@ -69,6 +69,7 @@
     "include": "lib",
     "exclude": [
       "lib/types.ts",
+      "lib/test.utils.ts",
       "**/*.d.ts",
       "**/*.test.ts"
     ],
