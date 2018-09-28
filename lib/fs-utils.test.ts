@@ -4,7 +4,7 @@ import { describe, it } from 'mocha';
 import { join } from 'path';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-import { ensureDirectory, getDirectoriesName } from './utils';
+import { ensureDirectory, getDirectoriesName } from './fs-utils';
 
 use(sinonChai);
 

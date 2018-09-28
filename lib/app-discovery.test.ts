@@ -6,8 +6,8 @@ import path from 'path';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import { discoverApps} from './app-discovery';
+import * as fsUtils from './fs-utils';
 import tracer from './tracer';
-import * as utils from './utils';
  
 use(sinonChai);
 
@@ -29,7 +29,7 @@ describe('App discovery', () => {
 
     it('should log discovered folders number through tracer', () => {
         const appFolders = ['app-1', 'app-2'];
-        const directoriesNameStub = sinon.stub(utils, 'getDirectoriesName').returns(appFolders);
+        const directoriesNameStub = sinon.stub(fsUtils, 'getDirectoriesName').returns(appFolders);
         const tracerSpy = sinon.spy(tracer, 'info');
 
         discoverApps({ APPS_FOLDER: '/apps-folder'});
@@ -42,7 +42,7 @@ describe('App discovery', () => {
     });
 
     it('should return an AppConfig object for each folder', () => {
-        const directoriesNameStub = sinon.stub(utils, 'getDirectoriesName').returns(['app-1', 'app-2']);
+        const directoriesNameStub = sinon.stub(fsUtils, 'getDirectoriesName').returns(['app-1', 'app-2']);
         const joinStub = sinon.stub(path, 'join');
         joinStub.withArgs('/apps-folder', 'app-1').returns('/apps-folder/app-1');
 
@@ -59,7 +59,7 @@ describe('App discovery', () => {
     });
 
     it('should include modena-config.json properties to the AppConfig if the file exists', () => {
-        const directoriesNameStub = sinon.stub(utils, 'getDirectoriesName').returns(['app-1', 'app-2']);
+        const directoriesNameStub = sinon.stub(fsUtils, 'getDirectoriesName').returns(['app-1', 'app-2']);
         const existsSyncStub = sinon.stub(fs, 'existsSync').callsFake((filePath: string) => 
             filePath && filePath.endsWith('modena-config.json') ? true : false);
         const joinStub = sinon.stub(path, 'join');
@@ -81,7 +81,7 @@ describe('App discovery', () => {
     });
 
     it('should define modenaSetupPath if modena-setup.js exists', () => {
-        const directoriesNameStub = sinon.stub(utils, 'getDirectoriesName').returns(['app-1', 'app-2']);
+        const directoriesNameStub = sinon.stub(fsUtils, 'getDirectoriesName').returns(['app-1', 'app-2']);
         const existsSyncStub = sinon.stub(fs, 'existsSync').callsFake((filePath: string) => 
             filePath && filePath.endsWith('modena-setup.js') ? true : false);
         const joinStub = sinon.stub(path, 'join');

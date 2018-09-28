@@ -1,8 +1,8 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { getDirectoriesName } from './fs-utils';
 import tracer from './tracer';
 import { AppConfig, ModenaConfig } from './types';
-import { getDirectoriesName } from './utils';
 
 export const discoverApps = (modenaConfig: ModenaConfig) => {
     if (!modenaConfig.APPS_FOLDER) {
