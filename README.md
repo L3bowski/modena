@@ -72,7 +72,31 @@ module.exports = configureEndpoints((router, config, middleware, utils) => {
 });
 ```
 
-## App URL resolver
+## App URLs resolving
+
+TODO Explain the core idea of app access (always by pathname)
+
+Modena evaluates each incoming Http request and tries to resolve it to the corresponding hosted-app based on the url domain, the pathname, the query parameters and modena configuration. The following rules will be applied in order for each request and, if a match is found, the request url will be adapted so that matches the corresponding hosted-app:
+
+1. **Domain**: Hosted-apps can be configured to match a public domain (e.g. www.example.com) by setting the publicDomains property in the modena-config.json file (TODO Link to the config documentation). If a request url domain matches any of the public domains of a hosted-app, the hosted-app name will be prepended to the request url pathname, and thus the request will match the hosted-app.
+
+    kinder > modena-config.json
+    ```javascript
+    {
+        "publicDomains": [ "my-website.xyz" ]
+    }
+    ```
+
+    - http://my-website.xyz will be internally transformed to http://my-website.xyz/kinder
+    - http://my-website.xyz/about will be internally transformed to http://my-website.xyz/kinder/about
+
+    Be aware that if same domain is being configured in more than one app, the requests will always be matched against the first hosted-app in alphabetical order.
+
+    TODO Mention the allowNamespaceTraversal property
+
+2. **Query parameters**: TODO
+3. **Url pathname**: TODO. In this case, the URL is not modified
+4. **Modena default app**: (TODO Link to the config)
 
 ## Defining global environment variables
 
