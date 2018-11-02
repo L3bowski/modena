@@ -39,6 +39,10 @@ export interface ModenaConfig {
     LOG_FILENAME?: string;
     PORT?: string;
     SESSION_SECRET?: string;
+    ENABLE_HTTPS?: boolean;
+    HTTPS_KEY_PATH?: string;
+    HTTPS_CERT_PATH?: string;
+    HTTPS_PASSPHRASE?: string;
     afterRegisteringApps?: (server: express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     beforeRegisteringApps?: (server: express.Application, tracer: any, modenaConfig: ModenaConfig, appsConfig: AppConfig[]) => void;
     [key: string]: any;
