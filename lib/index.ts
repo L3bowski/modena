@@ -55,6 +55,17 @@ export const runServer = (configuration?: ModenaConfig | string) => {
         modenaConfig.beforeRegisteringApps(server, tracer, modenaConfig, appsConfig);
     }
 
+    if (modenaConfig.HTTPS_REDIRECTION) {
+        server.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+            if (req.secure) {
+                next();
+            }
+            else {
+                res.redirect('https://' + req.headers.host + req.url);
+            }
+        });
+    }
+
     server.use(getAppResolverMiddleware(modenaConfig, appsConfig));
 
     tracedRegisterApps(server, modenaConfig, appsConfig)
