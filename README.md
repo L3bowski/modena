@@ -1,4 +1,4 @@
-# modena
+# modena-v1
 
 Express server wrapper that allows exposing multiple express applications, **hosted-apps**, inside the same express instance while keeping them isolated from each other.
 
@@ -135,4 +135,4 @@ module.exports = configureEndpoints((router, config, middleware, utils) => {
 
 ## Application examples
 
-For examples of applications that can run on modena see [modena-examples](https://github.com/L3bowski/modena-examples)
+For examples of applications that can run on modena see [modena-v1-examples](https://github.com/L3bowski/modena-v1-examples)
