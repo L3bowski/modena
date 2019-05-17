@@ -1,4 +1,4 @@
-# modena-v1
+# modena
 
 Express server wrapper that allows exposing multiple express applications, **hosted-apps**, inside the same express instance while keeping them isolated from each other.
 
